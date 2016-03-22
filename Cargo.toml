@@ -1,0 +1,7 @@
+[package]
+name = "noten"
+version = "0.1.0"
+authors = ["Mika Attila <radiantstatue@gmail.com>"]
+
+[dependencies]
+toml = "0.1.28"
