@@ -7,13 +7,37 @@ extern crate env_logger;
 
 mod config;
 
-use config::ReadError;
+use config::{Config, ReadError};
+
+use std::fs;
+
+fn run(config: Config) {
+    let entries = match fs::read_dir(&config.input_dir) {
+        Ok(entries) => entries,
+        Err(e) => {
+            error!("Failed to read input directory {:?}: {}",
+                   config.input_dir,
+                   e);
+            return;
+        }
+    };
+    for en in entries {
+        let en = match en {
+            Ok(en) => en,
+            Err(e) => {
+                error!("Failed to read directory entry: {}", e);
+                return;
+            }
+        };
+        println!("Processing {:?}", en.path());
+    }
+}
 
 fn main() {
     env_logger::init().unwrap();
 
     match config::read() {
-        Ok(config) => println!("{:#?}", config),
+        Ok(config) => run(config),
         Err(ReadError::Io(err)) => {
             error!("Failed opening {} ({}). Not a valid noten project.",
                    config::FILENAME,

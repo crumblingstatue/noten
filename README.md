@@ -1,4 +1,4 @@
-noten, the NOstressz TEmplating ENgine.
+noten, the NOstressz Templating ENgine.
 
 Written with my mother's website in mind, but trying to be as generic
 as possible.
@@ -24,3 +24,7 @@ generators | (Optional) The directory where generators are located.
 ## [constants]
 You can define various constants here that you can use in your templates.
 Any type that TOML accepts is valid.
+
+# Processing the templates
+Noten reads each template in the `directories.input` directory, processes them,
+and outputs the generated documents to `directories.output`.

@@ -10,10 +10,10 @@ pub const FILENAME: &'static str = "noten.toml";
 
 #[derive(Debug)]
 pub struct Config {
-    input_dir: PathBuf,
-    output_dir: PathBuf,
-    generators_dir: Option<PathBuf>,
-    constants: toml::Table,
+    pub input_dir: PathBuf,
+    pub output_dir: PathBuf,
+    pub generators_dir: Option<PathBuf>,
+    pub constants: toml::Table,
 }
 
 quick_error! {
