@@ -28,3 +28,14 @@ Any type that TOML accepts is valid.
 # Processing the templates
 Noten reads each template in the `directories.input` directory, processes them,
 and outputs the generated documents to `directories.output`.
+
+## Template syntax
+### Attribute list
+Each template begins with an attribute list.
+An attribute list begins with `{` and ends with `}`.
+In between the curly braces, it contains various attributes of the document
+in TOML format.
+### Substitution
+In addition to just normal text that gets interpreted as-sis, templates can
+contain substitutions, which get replaced by the thing they describe.
+Each substitution begins with `{{` and ends with `}}`.

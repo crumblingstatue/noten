@@ -4,12 +4,16 @@ extern crate quick_error;
 #[macro_use]
 extern crate log;
 extern crate env_logger;
+extern crate regex;
 
 mod config;
+mod process;
+mod substitution;
 
 use config::{Config, ReadError};
 
-use std::fs;
+use std::fs::{self, File};
+use std::io::prelude::*;
 
 fn run(config: Config) {
     let entries = match fs::read_dir(&config.input_dir) {
@@ -30,6 +34,26 @@ fn run(config: Config) {
             }
         };
         println!("Processing {:?}", en.path());
+        let mut file = match File::open(en.path()) {
+            Ok(file) => file,
+            Err(e) => {
+                error!("Failed to open {:?}: {}", en.path(), e);
+                return;
+            }
+        };
+        let mut template = String::new();
+        if let Err(e) = file.read_to_string(&mut template) {
+            error!("Failed to read template {:?}: {}", en.path(), e);
+            return;
+        }
+        let processed = match process::process(template, &config) {
+            Ok(processed) => processed,
+            Err(e) => {
+                error!("Failed to process template {:?}: {}", en.path(), e);
+                return;
+            }
+        };
+        println!("Output:\n------\n{}\n------", processed);
     }
 }
 
