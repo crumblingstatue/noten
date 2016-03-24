@@ -5,6 +5,7 @@ extern crate quick_error;
 extern crate log;
 extern crate env_logger;
 extern crate regex;
+extern crate hoedown;
 
 mod config;
 mod process;

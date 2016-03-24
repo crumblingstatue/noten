@@ -1,6 +1,7 @@
 use config::Config;
 use toml;
 use substitution::substitute;
+use hoedown::{self, Html, Markdown, Render};
 
 quick_error! {
     #[derive(Debug)]
@@ -49,6 +50,8 @@ pub fn process(input: String, config: &Config) -> Result<String, Error> {
             }
         }
     }
+    let doc = Markdown::new(&output);
+    let mut html = Html::new(hoedown::renderer::html::Flags::empty(), 0);
     Ok(format!("<?php
 function title() {{
     return \"{title}\";
@@ -60,5 +63,5 @@ function content() {{
 ?>
 ",
                title = title,
-               output = output))
+               output = html.render(&doc).to_str().expect("markdown=>html failed")))
 }
