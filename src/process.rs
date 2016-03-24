@@ -2,16 +2,10 @@ use config::Config;
 use toml;
 use substitution::substitute;
 use hoedown::{self, Html, Markdown, Render};
-
-quick_error! {
-    #[derive(Debug)]
-    pub enum Error {
-
-    }
-}
+use std::error::Error;
 
 /// Process a template
-pub fn process(input: String, config: &Config) -> Result<String, Error> {
+pub fn process(input: String, config: &Config) -> Result<String, Box<Error>> {
     let first_char = input.chars().next().expect("Couldn't get first character");
     if first_char != '{' {
         panic!("First character must be {");
@@ -20,7 +14,14 @@ pub fn process(input: String, config: &Config) -> Result<String, Error> {
     let attribs = {
         let attribs = &input[1..closing_brace_pos];
         let mut parser = toml::Parser::new(attribs);
-        parser.parse().expect("Failed to parse attribs TOML")
+        match parser.parse() {
+            Some(toml) => toml,
+            None => {
+                let toml_error = ::util::toml::parser_error_to_string(&parser);
+                let msg = format!("Failed to parse attribute TOML:\n{}", toml_error);
+                return Err(msg.into());
+            }
+        }
     };
     let mut output = String::new();
     let mut from = closing_brace_pos + 1;

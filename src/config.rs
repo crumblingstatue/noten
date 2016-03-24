@@ -68,17 +68,7 @@ pub fn read() -> Result<Config, ReadError> {
     let table = match parser.parse() {
         Some(table) => table,
         None => {
-            let mut msg = String::new();
-            for e in &parser.errors {
-                let (lo_line, lo_col) = parser.to_linecol(e.lo);
-                let (hi_line, hi_col) = parser.to_linecol(e.hi);
-                msg.push_str(&format!("{}:{} -> {}:{} : {}\n",
-                                      lo_line + 1,
-                                      lo_col + 1,
-                                      hi_line + 1,
-                                      hi_col + 1,
-                                      e.desc));
-            }
+            let msg = ::util::toml::parser_error_to_string(&parser);
             return Err(ReadError::TomlParser(msg));
         }
     };

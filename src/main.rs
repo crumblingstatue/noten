@@ -10,6 +10,7 @@ extern crate hoedown;
 mod config;
 mod process;
 mod substitution;
+mod util;
 
 use config::{Config, ReadError};
 
