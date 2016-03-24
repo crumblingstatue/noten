@@ -33,27 +33,41 @@ fn run(config: Config) {
                 return;
             }
         };
-        println!("Processing {:?}", en.path());
-        let mut file = match File::open(en.path()) {
+        let path = en.path();
+        println!("Processing {:?}", &path);
+        let mut file = match File::open(&path) {
             Ok(file) => file,
             Err(e) => {
-                error!("Failed to open {:?}: {}", en.path(), e);
+                error!("Failed to open {:?}: {}", &path, e);
                 return;
             }
         };
         let mut template = String::new();
         if let Err(e) = file.read_to_string(&mut template) {
-            error!("Failed to read template {:?}: {}", en.path(), e);
+            error!("Failed to read template {:?}: {}", &path, e);
             return;
         }
         let processed = match process::process(template, &config) {
             Ok(processed) => processed,
             Err(e) => {
-                error!("Failed to process template {:?}: {}", en.path(), e);
+                error!("Failed to process template {:?}: {}", &path, e);
                 return;
             }
         };
-        println!("Output:\n------\n{}\n------", processed);
+        let mut stem = path.file_stem().expect("File doesnt' have a stem. The fuck?").to_owned();
+        stem.push(".php");
+        let out_path = config.output_dir.join(stem);
+        let mut file = match File::create(&out_path) {
+            Ok(file) => file,
+            Err(e) => {
+                error!("Failed to open {:?}: {}", &out_path, e);
+                return;
+            }
+        };
+        if let Err(e) = file.write_all(processed.as_bytes()) {
+            error!("Failed to write output {:?}: {}", &out_path, e);
+            return;
+        }
     }
 }
 

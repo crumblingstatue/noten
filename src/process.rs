@@ -54,7 +54,10 @@ function title() {{
     return \"{title}\";
 }}
 function content() {{
-?>{output}<?php}}?>
+?>{output}
+<?php
+}}
+?>
 ",
                title = title,
                output = output))
