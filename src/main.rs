@@ -111,6 +111,7 @@ fn main() {
 
     match config::read() {
         Ok(config) => {
+            util::fs::create_dir_if_not_exists(".noten").unwrap();
             let exe_modif = fs::metadata(::std::env::current_exe().unwrap())
                                 .unwrap()
                                 .modified()
