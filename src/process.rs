@@ -36,10 +36,22 @@ fn read_attributes(input: &str) -> Result<(Attributes, usize), Box<Error>> {
     Ok((attribs, end))
 }
 
+fn text_of_first_header_html(input: &str) -> Option<&str> {
+    use regex::Regex;
+    debug!("Getting title from html header \"{}\"", input);
+    let re = Regex::new(r"<h[0-9]>(.*)</h[0-9]>").unwrap();
+    let caps = match re.captures(input) {
+        Some(caps) => caps,
+        None => return None,
+    };
+    debug!("Got captures");
+    caps.at(1)
+}
+
 fn text_of_first_header(input: &str) -> Option<&str> {
     let first_hash = match input.find('#') {
         Some(pos) => pos,
-        None => return None,
+        None => return text_of_first_header_html(input),
     };
     debug!("Found first_hash: {}", first_hash);
     let first_space = match input[first_hash..].find(' ') {
@@ -61,6 +73,8 @@ fn test_text_of_first_header() {
     assert_eq!(text_of_first_header("## Tales of Something\n"),
                Some("Tales of Something"));
     assert_eq!(text_of_first_header("# Masszázs\n"), Some("Masszázs"));
+    assert_eq!(text_of_first_header("<h2>Elérhetőség</h2>\n"),
+               Some("Elérhetőség"));
 }
 
 /// Process a template
