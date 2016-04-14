@@ -31,7 +31,7 @@ and outputs the generated documents to `directories.output`.
 
 ## Template syntax
 ### Attribute list
-Each template begins with an attribute list.
+Each template optionally begins with an attribute list.
 An attribute list begins with `{` and ends with `}`.
 In between the curly braces, it contains various attributes of the document
 in TOML format.
