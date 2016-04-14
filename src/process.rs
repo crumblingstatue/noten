@@ -93,7 +93,7 @@ pub fn process(input: String, config: &Config) -> Result<String, Box<Error>> {
             }
         }
     }
-    let doc = Markdown::new(&output);
+    let doc = Markdown::new(&output).extensions(hoedown::TABLES);
     let mut html = Html::new(hoedown::renderer::html::Flags::empty(), 0);
     Ok(format!("<?php
 function title() {{
