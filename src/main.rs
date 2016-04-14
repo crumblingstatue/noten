@@ -1,3 +1,5 @@
+#![feature(fs_time)]
+
 extern crate toml;
 #[macro_use]
 extern crate quick_error;
@@ -16,8 +18,29 @@ use config::{Config, ReadError};
 
 use std::fs::{self, File};
 use std::io::prelude::*;
+use std::time::SystemTime;
 
-fn run(config: Config) {
+/// Returns whether the entry to process is up-to-date, which
+/// means it does not need processing.
+fn up_to_date(template: &fs::Metadata,
+              content: Option<&fs::Metadata>,
+              exe_modif: &SystemTime)
+              -> bool {
+    match content {
+        None => false,
+        Some(content_meta) => {
+            let content_modif = content_meta.modified().unwrap();
+            if *exe_modif > content_modif {
+                false
+            } else {
+                let template_modif = template.modified().unwrap();
+                content_modif > template_modif
+            }
+        }
+    }
+}
+
+fn run(config: Config, exe_modif: &SystemTime) {
     let entries = match fs::read_dir(&config.input_dir) {
         Ok(entries) => entries,
         Err(e) => {
@@ -35,7 +58,20 @@ fn run(config: Config) {
                 return;
             }
         };
+
         let path = en.path();
+        debug!("Checking up-to-dateness of {:?}", path);
+        let mut stem = path.file_stem().expect("File doesnt' have a stem. The fuck?").to_owned();
+        stem.push(".php");
+        let out_path = config.output_dir.join(stem);
+
+        if up_to_date(&en.metadata().unwrap(),
+                      fs::metadata(&out_path).ok().as_ref(),
+                      exe_modif) {
+            info!("{:?} is up to date", &path);
+            continue;
+        }
+
         println!("Processing {:?}", &path);
         let mut file = match File::open(&path) {
             Ok(file) => file,
@@ -56,9 +92,6 @@ fn run(config: Config) {
                 return;
             }
         };
-        let mut stem = path.file_stem().expect("File doesnt' have a stem. The fuck?").to_owned();
-        stem.push(".php");
-        let out_path = config.output_dir.join(stem);
         let mut file = match File::create(&out_path) {
             Ok(file) => file,
             Err(e) => {
@@ -77,7 +110,13 @@ fn main() {
     env_logger::init().unwrap();
 
     match config::read() {
-        Ok(config) => run(config),
+        Ok(config) => {
+            let exe_modif = fs::metadata(::std::env::current_exe().unwrap())
+                                .unwrap()
+                                .modified()
+                                .unwrap();
+            run(config, &exe_modif);
+        }
         Err(ReadError::Io(err)) => {
             error!("Failed opening {} ({}). Not a valid noten project.",
                    config::FILENAME,
