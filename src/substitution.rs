@@ -2,6 +2,7 @@ use std::error::Error;
 use config::Config;
 use regex::{Captures, Regex};
 use std::path::Path;
+use process::ProcessingContext;
 
 fn expand_constants(command: &str, config: &Config) -> String {
     let re = Regex::new("%([a-z-]+)").unwrap();
@@ -13,7 +14,10 @@ fn expand_constants(command: &str, config: &Config) -> String {
     })
 }
 
-pub fn substitute(command: &str, config: &Config) -> Result<String, Box<Error>> {
+pub fn substitute<'a>(command: &str,
+                      config: &Config,
+                      context: &mut ProcessingContext<'a>)
+                      -> Result<String, Box<Error>> {
     let command = expand_constants(command.trim(), config);
     let re = Regex::new("([a-z]+)(.*)").unwrap();
     let caps = re.captures(&command).unwrap();
@@ -29,13 +33,18 @@ pub fn substitute(command: &str, config: &Config) -> Result<String, Box<Error>> 
             let args = rest.split_whitespace().collect::<Vec<&str>>();
             gen(gen_name,
                 &args,
-                config.generators_dir.as_ref().expect("Gen requested but no generators dir."))
+                config.generators_dir.as_ref().expect("Gen requested but no generators dir."),
+                context)
         }
         _ => panic!("Unknown command: {:?}", command),
     }
 }
 
-fn gen(gen_name: &str, args: &[&str], generators_dir: &Path) -> Result<String, Box<Error>> {
+fn gen<'a>(gen_name: &str,
+           args: &[&str],
+           generators_dir: &Path,
+           context: &mut ProcessingContext<'a>)
+           -> Result<String, Box<Error>> {
     use std::process::{Command, Stdio};
 
     let generator_dir = generators_dir.join(gen_name);
@@ -53,6 +62,7 @@ fn gen(gen_name: &str, args: &[&str], generators_dir: &Path) -> Result<String, B
     }
     let gen_cmd_path = generator_dir.join(format!("target/release/{}", gen_name));
     debug!("Gen command path is {:?}", gen_cmd_path);
+    context.template_deps.add_dep(context.template_path.to_owned(), gen_cmd_path.to_owned());
     let mut gen_cmd = Command::new(&gen_cmd_path);
     gen_cmd.args(args);
     let output = gen_cmd.output().expect(&format!("Failed to spawn {}", gen_name));

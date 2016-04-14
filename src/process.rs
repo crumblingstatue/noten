@@ -3,6 +3,9 @@ use toml;
 use substitution::substitute;
 use hoedown::{self, Html, Markdown, Render};
 use std::error::Error;
+use std::path::PathBuf;
+use template_deps::TemplateDeps;
+use std::cell::RefMut;
 
 #[derive(Default)]
 struct Attributes {
@@ -77,8 +80,17 @@ fn test_text_of_first_header() {
                Some("Elérhetőség"));
 }
 
+pub struct ProcessingContext<'a> {
+    pub template_path: PathBuf,
+    pub template_deps: RefMut<'a, TemplateDeps>,
+}
+
 /// Process a template
-pub fn process(input: String, config: &Config) -> Result<String, Box<Error>> {
+pub fn process(input: String,
+               config: &Config,
+               context: &mut ProcessingContext)
+               -> Result<String, Box<Error>> {
+    context.template_deps.clear_deps(context.template_path.clone());
     let mut output = String::new();
     let (attribs, mut from) = try!(read_attributes(&input));
     let title = match attribs.title {
@@ -94,7 +106,7 @@ pub fn process(input: String, config: &Config) -> Result<String, Box<Error>> {
                 output.push_str(&input[from..from + pos]);
                 let closing_pos = input[from + pos..].find("}}").expect("Expected closing }}");
                 let substitution = &input[from + pos + 2..from + pos + closing_pos];
-                match substitute(substitution, config) {
+                match substitute(substitution, config, context) {
                     Ok(text) => output.push_str(&text),
                     Err(e) => panic!("Error handling substitution: {}", e),
                 }

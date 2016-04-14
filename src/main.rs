@@ -13,6 +13,7 @@ mod config;
 mod process;
 mod substitution;
 mod util;
+mod template_deps;
 
 use config::{Config, ReadError};
 
@@ -41,6 +42,18 @@ fn up_to_date(template: &fs::Metadata,
 }
 
 fn run(config: Config, exe_modif: &SystemTime) {
+    use process::ProcessingContext;
+    use template_deps::TemplateDeps;
+    use std::cell::RefCell;
+    use std::path::Path;
+
+    let template_deps = if Path::new(template_deps::PATH).exists() {
+        TemplateDeps::open().unwrap()
+    } else {
+        TemplateDeps::default()
+    };
+    let template_deps = RefCell::new(template_deps);
+
     let entries = match fs::read_dir(&config.input_dir) {
         Ok(entries) => entries,
         Err(e) => {
@@ -85,11 +98,17 @@ fn run(config: Config, exe_modif: &SystemTime) {
             error!("Failed to read template {:?}: {}", &path, e);
             return;
         }
-        let processed = match process::process(template, &config) {
-            Ok(processed) => processed,
-            Err(e) => {
-                error!("Failed to process template {:?}: {}", &path, e);
-                return;
+        let processed = {
+            let mut context = ProcessingContext {
+                template_path: path.to_owned(),
+                template_deps: template_deps.borrow_mut(),
+            };
+            match process::process(template, &config, &mut context) {
+                Ok(processed) => processed,
+                Err(e) => {
+                    error!("Failed to process template {:?}: {}", &path, e);
+                    return;
+                }
             }
         };
         let mut file = match File::create(&out_path) {
@@ -104,6 +123,7 @@ fn run(config: Config, exe_modif: &SystemTime) {
             return;
         }
     }
+    template_deps.borrow().save().unwrap();
 }
 
 fn main() {
