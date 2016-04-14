@@ -5,7 +5,7 @@ use std::io;
 /// The dependencies of each template
 #[derive(Default, Debug)]
 pub struct TemplateDeps {
-    hash_map: HashMap<PathBuf, Vec<PathBuf>>,
+    pub hash_map: HashMap<PathBuf, Vec<PathBuf>>,
 }
 
 pub const PATH: &'static str = ".noten/template-deps.toml";

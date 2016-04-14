@@ -25,12 +25,18 @@ use std::time::SystemTime;
 /// means it does not need processing.
 fn up_to_date(template: &fs::Metadata,
               content: Option<&fs::Metadata>,
-              exe_modif: &SystemTime)
+              exe_modif: &SystemTime,
+              dep_modifs: &[SystemTime])
               -> bool {
     match content {
         None => false,
         Some(content_meta) => {
             let content_modif = content_meta.modified().unwrap();
+            for dep_modif in dep_modifs {
+                if *dep_modif > content_modif {
+                    return false;
+                }
+            }
             if *exe_modif > content_modif {
                 false
             } else {
@@ -77,10 +83,26 @@ fn run(config: Config, exe_modif: &SystemTime) {
         let mut stem = path.file_stem().expect("File doesnt' have a stem. The fuck?").to_owned();
         stem.push(".php");
         let out_path = config.output_dir.join(stem);
+        let mut dep_modifs = Vec::new();
+        if let Some(deps) = template_deps.borrow().hash_map.get(&path) {
+            for path in deps {
+                use std::process::Command;
+                Command::new("cargo")
+                    .current_dir(path.parent().unwrap())
+                    .arg("build")
+                    .arg("--release")
+                    .status()
+                    .unwrap();
+                let meta = fs::metadata(path).unwrap();
+                let modif = meta.modified().unwrap();
+                dep_modifs.push(modif);
+            }
+        }
 
         if up_to_date(&en.metadata().unwrap(),
                       fs::metadata(&out_path).ok().as_ref(),
-                      exe_modif) {
+                      exe_modif,
+                      &dep_modifs) {
             info!("{:?} is up to date", &path);
             continue;
         }
