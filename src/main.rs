@@ -50,15 +50,13 @@ fn up_to_date(template: &fs::Metadata,
 fn run(config: Config, exe_modif: &SystemTime) {
     use process::ProcessingContext;
     use template_deps::TemplateDeps;
-    use std::cell::RefCell;
     use std::path::Path;
 
-    let template_deps = if Path::new(template_deps::PATH).exists() {
+    let mut template_deps = if Path::new(template_deps::PATH).exists() {
         TemplateDeps::open().unwrap()
     } else {
         TemplateDeps::default()
     };
-    let template_deps = RefCell::new(template_deps);
 
     let entries = match fs::read_dir(&config.input_dir) {
         Ok(entries) => entries,
@@ -84,7 +82,7 @@ fn run(config: Config, exe_modif: &SystemTime) {
         stem.push(".php");
         let out_path = config.output_dir.join(stem);
         let mut dep_modifs = Vec::new();
-        if let Some(deps) = template_deps.borrow().hash_map.get(&path) {
+        if let Some(deps) = template_deps.hash_map.get(&path) {
             for path in deps {
                 use std::process::Command;
                 Command::new("cargo")
@@ -123,7 +121,7 @@ fn run(config: Config, exe_modif: &SystemTime) {
         let processed = {
             let mut context = ProcessingContext {
                 template_path: path.to_owned(),
-                template_deps: template_deps.borrow_mut(),
+                template_deps: &mut template_deps,
             };
             match process::process(template, &config, &mut context) {
                 Ok(processed) => processed,
@@ -145,7 +143,7 @@ fn run(config: Config, exe_modif: &SystemTime) {
             return;
         }
     }
-    template_deps.borrow().save().unwrap();
+    template_deps.save().unwrap();
 }
 
 fn main() {

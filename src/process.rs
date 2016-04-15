@@ -5,7 +5,6 @@ use hoedown::{self, Html, Markdown, Render};
 use std::error::Error;
 use std::path::PathBuf;
 use template_deps::TemplateDeps;
-use std::cell::RefMut;
 
 #[derive(Default)]
 struct Attributes {
@@ -82,7 +81,7 @@ fn test_text_of_first_header() {
 
 pub struct ProcessingContext<'a> {
     pub template_path: PathBuf,
-    pub template_deps: RefMut<'a, TemplateDeps>,
+    pub template_deps: &'a mut TemplateDeps,
 }
 
 /// Process a template
