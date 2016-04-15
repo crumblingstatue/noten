@@ -120,7 +120,7 @@ fn run(config: Config, exe_modif: &SystemTime) {
         }
         let processed = {
             let mut context = ProcessingContext {
-                template_path: path.to_owned(),
+                template_path: &path,
                 template_deps: &mut template_deps,
             };
             match process::process(template, &config, &mut context) {

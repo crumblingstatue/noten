@@ -3,7 +3,7 @@ use toml;
 use substitution::substitute;
 use hoedown::{self, Html, Markdown, Render};
 use std::error::Error;
-use std::path::PathBuf;
+use std::path::Path;
 use template_deps::TemplateDeps;
 
 #[derive(Default)]
@@ -80,7 +80,7 @@ fn test_text_of_first_header() {
 }
 
 pub struct ProcessingContext<'a> {
-    pub template_path: PathBuf,
+    pub template_path: &'a Path,
     pub template_deps: &'a mut TemplateDeps,
 }
 
@@ -89,7 +89,7 @@ pub fn process(input: String,
                config: &Config,
                context: &mut ProcessingContext)
                -> Result<String, Box<Error>> {
-    context.template_deps.clear_deps(context.template_path.clone());
+    context.template_deps.clear_deps(context.template_path.to_owned());
     let mut output = String::new();
     let (attribs, mut from) = try!(read_attributes(&input));
     let title = match attribs.title {

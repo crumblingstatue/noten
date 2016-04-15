@@ -40,11 +40,11 @@ pub fn substitute<'a>(command: &str,
     }
 }
 
-fn gen<'a>(gen_name: &str,
-           args: &[&str],
-           generators_dir: &Path,
-           context: &mut ProcessingContext<'a>)
-           -> Result<String, Box<Error>> {
+fn gen(gen_name: &str,
+       args: &[&str],
+       generators_dir: &Path,
+       context: &mut ProcessingContext)
+       -> Result<String, Box<Error>> {
     use std::process::{Command, Stdio};
 
     let generator_dir = generators_dir.join(gen_name);
