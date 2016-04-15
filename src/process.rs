@@ -89,7 +89,7 @@ pub fn process(input: String,
                config: &Config,
                context: &mut ProcessingContext)
                -> Result<String, Box<Error>> {
-    context.template_deps.clear_deps(context.template_path.to_owned());
+    context.template_deps.clear_deps(context.template_path);
     let mut output = String::new();
     let (attribs, mut from) = try!(read_attributes(&input));
     let title = match attribs.title {

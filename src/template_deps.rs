@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::io;
 
 /// The dependencies of each template
@@ -35,8 +35,8 @@ impl TemplateDeps {
         }
         Ok(TemplateDeps { hash_map: hash_map })
     }
-    pub fn clear_deps(&mut self, template_path: PathBuf) {
-        if let Some(entry) = self.hash_map.get_mut(&template_path) {
+    pub fn clear_deps(&mut self, template_path: &Path) {
+        if let Some(entry) = self.hash_map.get_mut(template_path) {
             entry.clear();
         }
     }
