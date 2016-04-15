@@ -118,17 +118,15 @@ fn run(config: Config, exe_modif: &SystemTime) {
             error!("Failed to read template {:?}: {}", &path, e);
             return;
         }
-        let processed = {
-            let mut context = ProcessingContext {
-                template_path: &path,
-                template_deps: &mut template_deps,
-            };
-            match process::process(template, &config, &mut context) {
-                Ok(processed) => processed,
-                Err(e) => {
-                    error!("Failed to process template {:?}: {}", &path, e);
-                    return;
-                }
+        let mut context = ProcessingContext {
+            template_path: &path,
+            template_deps: &mut template_deps,
+        };
+        let processed = match process::process(template, &config, &mut context) {
+            Ok(processed) => processed,
+            Err(e) => {
+                error!("Failed to process template {:?}: {}", &path, e);
+                return;
             }
         };
         let mut file = match File::create(&out_path) {
