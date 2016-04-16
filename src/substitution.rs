@@ -36,6 +36,7 @@ pub fn substitute<'a>(command: &str,
                 config.generators_dir.as_ref().expect("Gen requested but no generators dir."),
                 context)
         }
+        "url" => Ok(format!("<a href=\"{0}\">{0}</a>", rest.trim())),
         _ => Err(format!("Unknown command: {:?}", command).into()),
     }
 }
