@@ -36,7 +36,7 @@ pub fn substitute<'a>(command: &str,
                 config.generators_dir.as_ref().expect("Gen requested but no generators dir."),
                 context)
         }
-        _ => panic!("Unknown command: {:?}", command),
+        _ => Err(format!("Unknown command: {:?}", command).into()),
     }
 }
 

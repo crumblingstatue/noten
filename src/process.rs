@@ -107,7 +107,7 @@ pub fn process(input: String,
                 let substitution = &input[from + pos + 2..from + pos + closing_pos];
                 match substitute(substitution, config, context) {
                     Ok(text) => output.push_str(&text),
-                    Err(e) => panic!("Error handling substitution: {}", e),
+                    Err(e) => return Err(format!("Error handling substitution: {}", e).into()),
                 }
                 debug!("Substitution: \"{}\"", substitution);
                 from = from + pos + closing_pos + 2;
