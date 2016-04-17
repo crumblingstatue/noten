@@ -1,7 +1,6 @@
 use std::error::Error;
 use config::Config;
 use regex::{Captures, Regex};
-use std::path::Path;
 use process::ProcessingContext;
 
 fn expand_constants(command: &str, config: &Config) -> Result<String, Box<Error>> {
@@ -28,10 +27,9 @@ fn expand_constants(command: &str, config: &Config) -> Result<String, Box<Error>
 }
 
 pub fn substitute<'a>(command: &str,
-                      config: &Config,
                       context: &mut ProcessingContext<'a>)
                       -> Result<String, Box<Error>> {
-    let command = try!(expand_constants(command.trim(), config));
+    let command = try!(expand_constants(command.trim(), context.config));
     let re = Regex::new("([a-z]+)(.*)").unwrap();
     let caps = re.captures(&command).unwrap();
     let command = caps.at(1).expect("No command");
@@ -44,10 +42,7 @@ pub fn substitute<'a>(command: &str,
             let rest = &caps[2];
             debug!("Gen: {:?}, Rest: {:?}", gen_name, rest);
             let args = rest.split_whitespace().collect::<Vec<&str>>();
-            gen(gen_name,
-                &args,
-                config.generators_dir.as_ref().expect("Gen requested but no generators dir."),
-                context)
+            gen(gen_name, &args, context)
         }
         "url" => Ok(format!("<a href=\"{0}\">{0}</a>", rest.trim())),
         _ => Err(format!("Unknown command: {:?}", command).into()),
@@ -56,12 +51,15 @@ pub fn substitute<'a>(command: &str,
 
 fn gen(gen_name: &str,
        args: &[&str],
-       generators_dir: &Path,
        context: &mut ProcessingContext)
        -> Result<String, Box<Error>> {
     use std::process::{Command, Stdio};
 
-    let generator_dir = generators_dir.join(gen_name);
+    let cfg_generators_dir = context.config
+                                    .generators_dir
+                                    .as_ref()
+                                    .expect("Gen requested but no generators dir");
+    let generator_dir = cfg_generators_dir.join(gen_name);
     if !generator_dir.exists() {
         panic!("{:?} does not exist.", generator_dir);
     }

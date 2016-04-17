@@ -121,8 +121,9 @@ fn run(config: Config, exe_modif: &SystemTime) {
         let mut context = ProcessingContext {
             template_path: &path,
             template_deps: &mut template_deps,
+            config: &config,
         };
-        let processed = match process::process(template, &config, &mut context) {
+        let processed = match process::process(template, &mut context) {
             Ok(processed) => processed,
             Err(e) => {
                 error!("Failed to process template {:?}: {}", &path, e);

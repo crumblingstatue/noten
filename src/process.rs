@@ -82,13 +82,11 @@ fn test_text_of_first_header() {
 pub struct ProcessingContext<'a> {
     pub template_path: &'a Path,
     pub template_deps: &'a mut TemplateDeps,
+    pub config: &'a Config,
 }
 
 /// Process a template
-pub fn process(input: String,
-               config: &Config,
-               context: &mut ProcessingContext)
-               -> Result<String, Box<Error>> {
+pub fn process(input: String, context: &mut ProcessingContext) -> Result<String, Box<Error>> {
     context.template_deps.clear_deps(context.template_path);
     let mut output = String::new();
     let (attribs, mut from) = try!(read_attributes(&input));
@@ -105,7 +103,7 @@ pub fn process(input: String,
                 output.push_str(&input[from..from + pos]);
                 let closing_pos = input[from + pos..].find("}}").expect("Expected closing }}");
                 let substitution = &input[from + pos + 2..from + pos + closing_pos];
-                match substitute(substitution, config, context) {
+                match substitute(substitution, context) {
                     Ok(text) => output.push_str(&text),
                     Err(e) => return Err(format!("Error handling substitution: {}", e).into()),
                 }
