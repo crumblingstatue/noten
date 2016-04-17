@@ -80,6 +80,11 @@ fn run(config: Config, exe_modif: &SystemTime, config_modif: &SystemTime) {
         };
 
         let path = en.path();
+        if path.extension() != Some("noten".as_ref()) {
+            warn!("Skipping {:?}, because it doesn't have .noten extension",
+                  path);
+            continue;
+        }
         debug!("Checking up-to-dateness of {:?}", path);
         let mut stem = path.file_stem().expect("File doesnt' have a stem. The fuck?").to_owned();
         stem.push(".php");

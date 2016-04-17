@@ -28,6 +28,7 @@ Any type that TOML accepts is valid.
 # Processing the templates
 Noten reads each template in the `directories.input` directory, processes them,
 and outputs the generated documents to `directories.output`.
+It only processes files with the extension `.noten`.
 
 ## Template syntax
 ### Attribute list
