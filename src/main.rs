@@ -26,6 +26,7 @@ use std::time::SystemTime;
 fn up_to_date(template: &fs::Metadata,
               content: Option<&fs::Metadata>,
               exe_modif: &SystemTime,
+              config_modif: &SystemTime,
               dep_modifs: &[SystemTime])
               -> bool {
     match content {
@@ -37,7 +38,7 @@ fn up_to_date(template: &fs::Metadata,
                     return false;
                 }
             }
-            if *exe_modif > content_modif {
+            if *exe_modif > content_modif || *config_modif > content_modif {
                 false
             } else {
                 let template_modif = template.modified().unwrap();
@@ -47,7 +48,7 @@ fn up_to_date(template: &fs::Metadata,
     }
 }
 
-fn run(config: Config, exe_modif: &SystemTime) {
+fn run(config: Config, exe_modif: &SystemTime, config_modif: &SystemTime) {
     use process::ProcessingContext;
     use template_deps::TemplateDeps;
     use std::path::Path;
@@ -100,6 +101,7 @@ fn run(config: Config, exe_modif: &SystemTime) {
         if up_to_date(&en.metadata().unwrap(),
                       fs::metadata(&out_path).ok().as_ref(),
                       exe_modif,
+                      config_modif,
                       &dep_modifs) {
             info!("{:?} is up to date", &path);
             continue;
@@ -149,13 +151,13 @@ fn main() {
     env_logger::init().unwrap();
 
     match config::read() {
-        Ok(config) => {
+        Ok((config, config_modif)) => {
             util::fs::create_dir_if_not_exists(".noten").unwrap();
             let exe_modif = fs::metadata(::std::env::current_exe().unwrap())
                                 .unwrap()
                                 .modified()
                                 .unwrap();
-            run(config, &exe_modif);
+            run(config, &exe_modif, &config_modif);
         }
         Err(ReadError::Io(err)) => {
             error!("Failed opening {} ({}). Not a valid noten project.",

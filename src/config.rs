@@ -3,6 +3,7 @@ use std::io;
 use std::io::prelude::*;
 use std::path::PathBuf;
 use std::borrow::Cow;
+use std::time::SystemTime;
 
 use toml;
 
@@ -60,7 +61,8 @@ fn require_field<'a, T: ToTomlTable + 'a>(to_table: &'a T,
     table.get(name).ok_or_else(|| ReadError::MissingField(name.into()))
 }
 
-pub fn read() -> Result<Config, ReadError> {
+/// Reads the configuration, returns (config, last-modified).
+pub fn read() -> Result<(Config, SystemTime), ReadError> {
     let mut file = try!(File::open(FILENAME));
     let mut text = String::new();
     try!(file.read_to_string(&mut text));
@@ -99,10 +101,11 @@ pub fn read() -> Result<Config, ReadError> {
         Some(value) => convert!(toml::Value::Table, value),
         None => toml::Table::new(),
     };
-    Ok(Config {
+    Ok((Config {
         input_dir: input_dir,
         output_dir: output_dir,
         generators_dir: generators_dir,
         constants: constants,
-    })
+    },
+        file.metadata().unwrap().modified().unwrap()))
 }
