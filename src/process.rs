@@ -56,7 +56,7 @@ fn text_of_first_header_html(input: &str) -> Option<&str> {
         None => return None,
     };
     debug!("Got captures");
-    caps.at(1)
+    caps.at(1).map(|s| s.trim())
 }
 
 fn text_of_first_header(input: &str) -> Option<&str> {
@@ -86,6 +86,8 @@ fn test_text_of_first_header() {
     assert_eq!(text_of_first_header("# Masszázs\n"), Some("Masszázs"));
     assert_eq!(text_of_first_header("<h2>Elérhetőség</h2>\n"),
                Some("Elérhetőség"));
+    assert_eq!(text_of_first_header("<h2> Asszisztok betegségekre és sérülésekre </h2>"),
+               Some("Asszisztok betegségekre és sérülésekre"));
 }
 
 pub struct ProcessingContext<'a> {
