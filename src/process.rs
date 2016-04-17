@@ -9,6 +9,7 @@ use template_deps::TemplateDeps;
 #[derive(Default)]
 struct Attributes {
     title: Option<String>,
+    constants: Option<toml::Table>,
 }
 
 /// Reads the optional attribute section at the beginning of the template.
@@ -34,7 +35,15 @@ fn read_attributes(input: &str) -> Result<(Attributes, usize), Box<Error>> {
     };
     let title = attribs.get("title").and_then(|v| v.as_str()).map(|s| s.to_owned());
     let end = closing_brace_pos + 1;
-    let attribs = Attributes { title: title };
+    let consts = match attribs.get("constants") {
+        Some(&toml::Value::Table(ref table)) => Some(table.clone()),
+        Some(_) => return Err("`constants` attribute should be a toml table.".into()),
+        None => None,
+    };
+    let attribs = Attributes {
+        title: title,
+        constants: consts,
+    };
     Ok((attribs, end))
 }
 
@@ -103,7 +112,7 @@ pub fn process(input: String, context: &mut ProcessingContext) -> Result<String,
                 output.push_str(&input[from..from + pos]);
                 let closing_pos = input[from + pos..].find("}}").expect("Expected closing }}");
                 let substitution = &input[from + pos + 2..from + pos + closing_pos];
-                match substitute(substitution, context) {
+                match substitute(substitution, context, attribs.constants.as_ref()) {
                     Ok(text) => output.push_str(&text),
                     Err(e) => return Err(format!("Error handling substitution: {}", e).into()),
                 }

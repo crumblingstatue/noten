@@ -35,6 +35,9 @@ Each template optionally begins with an attribute list.
 An attribute list begins with `{` and ends with `}`.
 In between the curly braces, it contains various attributes of the document
 in TOML format.
+
+You can also declare constants in the attribute list.
+Constants declared here shadow global constants.
 ### Substitution
 In addition to just normal text that gets interpreted as-sis, templates can
 contain substitutions, which get replaced by the thing they describe.

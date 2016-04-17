@@ -2,13 +2,24 @@ use std::error::Error;
 use config::Config;
 use regex::{Captures, Regex};
 use process::ProcessingContext;
+use toml;
 
-fn expand_constants(command: &str, config: &Config) -> Result<String, Box<Error>> {
+fn expand_constants(command: &str,
+                    config: &Config,
+                    local_constants: Option<&toml::Table>)
+                    -> Result<String, Box<Error>> {
     let re = Regex::new("%([a-z-]+)").unwrap();
     let mut first_error = None;
     let replaced = re.replace_all(command, |caps: &Captures| {
         let name = caps.at(1).expect("No capture found.");
         let constants = &config.constants;
+        // Check in local constants first, since they shadow global ones
+        if let Some(local) = local_constants {
+            if let Some(const_) = local.get(name) {
+                return ::util::toml::value_to_string(const_);
+            }
+        }
+        // Now check in global
         let substitute = match constants.get(name) {
             Some(const_) => const_,
             None => {
@@ -27,9 +38,10 @@ fn expand_constants(command: &str, config: &Config) -> Result<String, Box<Error>
 }
 
 pub fn substitute<'a>(command: &str,
-                      context: &mut ProcessingContext<'a>)
+                      context: &mut ProcessingContext<'a>,
+                      local_constants: Option<&toml::Table>)
                       -> Result<String, Box<Error>> {
-    let command = try!(expand_constants(command.trim(), context.config));
+    let command = try!(expand_constants(command.trim(), context.config, local_constants));
     let re = Regex::new("([a-z]+)(.*)").unwrap();
     let caps = re.captures(&command).unwrap();
     let command = caps.at(1).expect("No command");
