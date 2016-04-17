@@ -12,6 +12,9 @@ If it's not found, then the current directory is not a valid noten project.
 The configuration file is written in the TOML format.
 Here is a listing of the options.
 
+## skeleton
+The path of the [skeleton template](#the-skeleton-template).
+
 ## [directories]
 These are the various directories the noten works with.
 
@@ -24,6 +27,31 @@ generators | (Optional) The directory where generators are located.
 ## [constants]
 You can define various constants here that you can use in your templates.
 Any type that TOML accepts is valid.
+
+# The skeleton template
+The skeleton template is used as the skeleton for generating the output for each page.
+It exists because a website usually has a basic skeleton that is the same
+for all pages (e.g. the header, the menu, etc), and should not be repeated
+manually. It has a few special powers that are not available in normal templates.
+
+## Special substitution commands
+It has the following special substitution commands that are not available in normal
+templates.
+
+name         | desc
+------------ | ----
+title        | Title of the child template
+description  | Description of the child template (optional)
+content      | The content of the child template
+if-exists    | Used for handling optional substitution commands
+
+### if-exists
+`if-exists <name> <template-string>`
+
+It checks if the substitution command with `<name>` exists, if it does, it
+emits the template `<template-string>`, otherwise, it does nothing.
+
+If a template string is emitted, it is then expanded like any other template.
 
 # Processing the templates
 Noten reads each template in the `directories.input` directory, processes them,
@@ -55,6 +83,6 @@ will be used as the title. If it does not satisfy this requirement, then the doc
 a valid noten template.
 
 ### Substitution
-In addition to just normal text that gets interpreted as-sis, templates can
+In addition to just normal text that gets interpreted as-is, templates can
 contain substitutions, which get replaced by the thing they describe.
 Each substitution begins with `{{` and ends with `}}`.

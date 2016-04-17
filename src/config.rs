@@ -11,6 +11,7 @@ pub const FILENAME: &'static str = "noten.toml";
 
 #[derive(Debug)]
 pub struct Config {
+    pub skeleton_template: PathBuf,
     pub input_dir: PathBuf,
     pub output_dir: PathBuf,
     pub generators_dir: Option<PathBuf>,
@@ -87,6 +88,8 @@ pub fn read() -> Result<(Config, SystemTime), ReadError> {
             }
         }
     }
+    let skeleton_template = try!(require_field(&table, "skeleton"));
+    let skeleton_template = convert!(toml::Value::String, skeleton_template).into();
     let directories = try!(require_field(&table, "directories"));
     let input_dir = try!(require_field(directories, "input"));
     let input_dir = convert!(toml::Value::String, input_dir).into();
@@ -102,6 +105,7 @@ pub fn read() -> Result<(Config, SystemTime), ReadError> {
         None => toml::Table::new(),
     };
     Ok((Config {
+        skeleton_template: skeleton_template,
         input_dir: input_dir,
         output_dir: output_dir,
         generators_dir: generators_dir,
