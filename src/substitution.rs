@@ -29,7 +29,7 @@ fn expand_constants(command: &str,
                 return String::new();
             }
         };
-        substitute.to_string()
+        ::util::toml::value_to_string(substitute)
     });
     match first_error {
         None => Ok(replaced),
