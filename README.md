@@ -16,7 +16,7 @@ Here is a listing of the options.
 These are the various directories the noten works with.
 
 name       | desc
----------- | ---
+---------- | ----
 input      | The directory the templates are read from.
 output     | The directory that the output is written to.
 generators | (Optional) The directory where generators are located.
@@ -35,6 +35,13 @@ Each template optionally begins with an attribute list.
 An attribute list begins with `{` and ends with `}`.
 In between the curly braces, it contains various attributes of the document
 in TOML format.
+
+Here are some attributes you can define:
+
+name        | desc
+----------- | ----
+title       | The title of the page. If not given, it will be computed from the first header.
+description | The html meta description of the page.
 
 You can also declare constants in the attribute list.
 Constants declared here shadow global constants.

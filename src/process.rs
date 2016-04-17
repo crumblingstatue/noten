@@ -9,6 +9,7 @@ use template_deps::TemplateDeps;
 #[derive(Default)]
 struct Attributes {
     title: Option<String>,
+    description: Option<String>,
     constants: Option<toml::Table>,
 }
 
@@ -34,6 +35,7 @@ fn read_attributes(input: &str) -> Result<(Attributes, usize), Box<Error>> {
         }
     };
     let title = attribs.get("title").and_then(|v| v.as_str()).map(|s| s.to_owned());
+    let desc = attribs.get("description").and_then(|v| v.as_str()).map(|s| s.to_owned());
     let end = closing_brace_pos + 1;
     let consts = match attribs.get("constants") {
         Some(&toml::Value::Table(ref table)) => Some(table.clone()),
@@ -42,6 +44,7 @@ fn read_attributes(input: &str) -> Result<(Attributes, usize), Box<Error>> {
     };
     let attribs = Attributes {
         title: title,
+        description: desc,
         constants: consts,
     };
     Ok((attribs, end))
@@ -98,6 +101,7 @@ pub struct ProcessingContext<'a> {
 
 /// Process a template
 pub fn process(input: String, context: &mut ProcessingContext) -> Result<String, Box<Error>> {
+    use std::borrow::Cow;
     context.template_deps.clear_deps(context.template_path);
     let mut output = String::new();
     let (attribs, mut from) = try!(read_attributes(&input));
@@ -129,12 +133,20 @@ pub fn process(input: String, context: &mut ProcessingContext) -> Result<String,
     }
     let doc = Markdown::new(&output).extensions(hoedown::TABLES);
     let mut html = Html::new(hoedown::renderer::html::Flags::empty(), 0);
+    let desc_fun: Option<Cow<_>> = attribs.description.map(|desc| {
+        format!("function description()
+{{
+    return \"{}\";
+}}",
+                desc)
+            .into()
+    });
     Ok(format!("<?php
 function title()
 {{
     return \"{title}\";
 }}
-
+{desc}
 function content()
 {{
 ?>
@@ -144,5 +156,6 @@ function content()
 ?>
 ",
                title = title,
-               output = html.render(&doc).to_str().expect("markdown=>html failed")))
+               output = html.render(&doc).to_str().expect("markdown=>html failed"),
+               desc = desc_fun.unwrap_or("".into())))
 }
