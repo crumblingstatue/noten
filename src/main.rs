@@ -8,6 +8,8 @@ extern crate log;
 extern crate env_logger;
 extern crate regex;
 extern crate hoedown;
+#[macro_use]
+extern crate lazy_static;
 
 mod config;
 mod process;

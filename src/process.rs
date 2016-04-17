@@ -50,47 +50,42 @@ fn read_attributes(input: &str) -> Result<(Attributes, usize), Box<Error>> {
     Ok((attribs, end))
 }
 
-fn text_of_first_header_html(input: &str) -> Option<&str> {
+fn find_title(input: &str) -> Result<&str, Box<Error>> {
     use regex::Regex;
-    debug!("Getting title from html header \"{}\"", input);
-    let re = Regex::new(r"<h[0-9]>(.*)</h[0-9]>").unwrap();
-    let caps = match re.captures(input) {
-        Some(caps) => caps,
-        None => return None,
-    };
-    debug!("Got captures");
-    caps.at(1).map(|s| s.trim())
-}
 
-fn text_of_first_header(input: &str) -> Option<&str> {
-    let first_hash = match input.find('#') {
-        Some(pos) => pos,
-        None => return text_of_first_header_html(input),
+    lazy_static! {
+        static ref MD: Regex = Regex::new("#{1, 9}(.*)").unwrap();
+        static ref HTML: Regex = Regex::new("<h[0-9]>(.*)</h[0-9]>").unwrap();
+    }
+    // The first non-empty line will be tried as the title.
+    let line = match input.lines().find(|l| !l.is_empty()) {
+        Some(line) => line,
+        None => return Err("There are only empty lines in the document".into()),
     };
-    debug!("Found first_hash: {}", first_hash);
-    let first_space = match input[first_hash..].find(' ') {
-        Some(pos) => first_hash + pos,
-        None => return None,
-    };
-    debug!("Found first_space: {}", first_space);
-    let first_newline = match input[first_space..].find('\n') {
-        Some(pos) => first_space + pos,
-        None => return None,
-    };
-    debug!("Found first_newine: {}", first_newline);
-    Some(&input[first_space + 1..first_newline])
+    // Try a markdown header first
+    match MD.captures(line) {
+        Some(caps) => Ok(caps.at(1).unwrap().trim()),
+        None => {
+            // Try the HTML header
+            match HTML.captures(line) {
+                Some(caps) => Ok(caps.at(1).unwrap().trim()),
+                None => Err(format!("\"{}\" is not a valid header", line).into()),
+            }
+        }
+    }
 }
 
 #[test]
-fn test_text_of_first_header() {
+fn test_find_title() {
     ::env_logger::init().unwrap();
-    assert_eq!(text_of_first_header("## Tales of Something\n"),
-               Some("Tales of Something"));
-    assert_eq!(text_of_first_header("# Masszázs\n"), Some("Masszázs"));
-    assert_eq!(text_of_first_header("<h2>Elérhetőség</h2>\n"),
-               Some("Elérhetőség"));
-    assert_eq!(text_of_first_header("<h2> Asszisztok betegségekre és sérülésekre </h2>"),
-               Some("Asszisztok betegségekre és sérülésekre"));
+    assert_eq!(find_title("## Tales of Something\n").unwrap(),
+               "Tales of Something");
+    assert_eq!(find_title("# Masszázs\n").unwrap(), "Masszázs");
+    assert_eq!(find_title("<h2>Elérhetőség</h2>\n").unwrap(),
+               "Elérhetőség");
+    assert_eq!(find_title("<h2> Asszisztok betegségekre és sérülésekre </h2>").unwrap(),
+               "Asszisztok betegségekre és sérülésekre");
+    assert_eq!(find_title("<h2>Title</h2>\n# Junk\n").unwrap(), "Title");
 }
 
 pub struct ProcessingContext<'a> {
@@ -107,7 +102,7 @@ pub fn process(input: String, context: &mut ProcessingContext) -> Result<String,
     let (attribs, mut from) = try!(read_attributes(&input));
     let title = match attribs.title {
         Some(title) => title,
-        None => try!(text_of_first_header(&input).ok_or("Couldn't get title")).to_owned(),
+        None => try!(find_title(&input[from..])).to_owned(),
     };
     loop {
         debug!("Attempting to find next {{{{ or EOF @ {}", from);

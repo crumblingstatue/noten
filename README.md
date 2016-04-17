@@ -40,11 +40,19 @@ Here are some attributes you can define:
 
 name        | desc
 ----------- | ----
-title       | The title of the page. If not given, it will be computed from the first header.
+title       | The title of the page. If not given, it will be computed according to [Title computation](#title-computation).
 description | The html meta description of the page.
 
 You can also declare constants in the attribute list.
 Constants declared here shadow global constants.
+
+#### Title computation
+
+If no title is given in the attribute list, it will be computed like this:
+The first non-empty line must either be a markdown or HTML header, and its content
+will be used as the title. If it does not satisfy this requirement, then the document is not
+a valid noten template.
+
 ### Substitution
 In addition to just normal text that gets interpreted as-sis, templates can
 contain substitutions, which get replaced by the thing they describe.
