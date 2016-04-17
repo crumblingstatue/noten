@@ -4,21 +4,34 @@ use regex::{Captures, Regex};
 use std::path::Path;
 use process::ProcessingContext;
 
-fn expand_constants(command: &str, config: &Config) -> String {
+fn expand_constants(command: &str, config: &Config) -> Result<String, Box<Error>> {
     let re = Regex::new("%([a-z-]+)").unwrap();
-    re.replace_all(command, |caps: &Captures| {
+    let mut first_error = None;
+    let replaced = re.replace_all(command, |caps: &Captures| {
         let name = caps.at(1).expect("No capture found.");
-        let consts = &config.constants;
-        let substitute = consts.get(name).expect("No substitute found.");
+        let constants = &config.constants;
+        let substitute = match constants.get(name) {
+            Some(const_) => const_,
+            None => {
+                if let None = first_error {
+                    first_error = Some(format!("Constant `{}` does not exist", name));
+                }
+                return String::new();
+            }
+        };
         substitute.to_string()
-    })
+    });
+    match first_error {
+        None => Ok(replaced),
+        Some(err) => Err(err.into()),
+    }
 }
 
 pub fn substitute<'a>(command: &str,
                       config: &Config,
                       context: &mut ProcessingContext<'a>)
                       -> Result<String, Box<Error>> {
-    let command = expand_constants(command.trim(), config);
+    let command = try!(expand_constants(command.trim(), config));
     let re = Regex::new("([a-z]+)(.*)").unwrap();
     let caps = re.captures(&command).unwrap();
     let command = caps.at(1).expect("No command");
