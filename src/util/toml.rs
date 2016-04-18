@@ -188,7 +188,7 @@ fn test_extractor() {
     }
     println!("{:?}", extractor.table.get("skeleton"));
     match extractor.optional::<toml::Table>("table") {
-        Some(Err(e)) => {}
+        Some(Err(_)) => {}
         etc => panic!("Didn't get Some(Err), got: {:?}", etc),
     }
 }
