@@ -172,12 +172,22 @@ fn main() {
                    err)
         }
         Err(ReadError::TomlParser(msg)) => error!("Failed to parse {}:\n{}", config::FILENAME, msg),
-        Err(ReadError::MissingField(name)) => error!("Missing required field: {}", name),
-        Err(ReadError::TypeMismatch(name, expected, got)) => {
-            error!("Field {} should be of type {}, but it is {}",
-                   name,
-                   expected,
-                   got)
+        Err(ReadError::Extract(err)) => {
+            use util::toml::ExtractError;
+            match err {
+                ExtractError::Missing { name } => {
+                    error!("{}: The field `{}` is required, but missing.",
+                           config::FILENAME,
+                           name)
+                }
+                ExtractError::TypeMismatch { name, expected, got } => {
+                    error!("{}: Field `{}` should be of type `{}`, but it is `{}`.",
+                           config::FILENAME,
+                           name,
+                           expected,
+                           got)
+                }
+            }
         }
     }
 }

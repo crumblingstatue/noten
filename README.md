@@ -15,6 +15,10 @@ Here is a listing of the options.
 ## skeleton
 The path of the [skeleton template](#the-skeleton-template).
 
+## index
+The name of the document that will be treated as the index.
+A copy of it will be stored as `index.html`.
+
 ## [directories]
 These are the various directories the noten works with.
 
