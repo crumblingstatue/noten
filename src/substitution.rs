@@ -4,6 +4,24 @@ use regex::{Captures, Regex};
 use process::ProcessingContext;
 use toml;
 
+fn get_constant_string(name: &str,
+                       config: &Config,
+                       local_constants: Option<&toml::Table>)
+                       -> Result<String, Box<Error>> {
+    let constants = &config.constants;
+    // Check in local constants first, since they shadow global ones
+    if let Some(local) = local_constants {
+        if let Some(const_) = local.get(name) {
+            return Ok(::util::toml::value_to_string(const_));
+        }
+    }
+    // Now check in global
+    match constants.get(name) {
+        Some(const_) => Ok(::util::toml::value_to_string(const_)),
+        None => Err(format!("Constant `{}` does not exist", name).into()),
+    }
+}
+
 fn expand_constants(command: &str,
                     config: &Config,
                     local_constants: Option<&toml::Table>)
@@ -12,24 +30,15 @@ fn expand_constants(command: &str,
     let mut first_error = None;
     let replaced = re.replace_all(command, |caps: &Captures| {
         let name = caps.at(1).expect("No capture found.");
-        let constants = &config.constants;
-        // Check in local constants first, since they shadow global ones
-        if let Some(local) = local_constants {
-            if let Some(const_) = local.get(name) {
-                return ::util::toml::value_to_string(const_);
+        match get_constant_string(name, config, local_constants) {
+            Ok(c) => c,
+            Err(e) => {
+                if let None = first_error {
+                    first_error = Some(e);
+                }
+                String::new()
             }
         }
-        // Now check in global
-        let substitute = match constants.get(name) {
-            Some(const_) => const_,
-            None => {
-                if let None = first_error {
-                    first_error = Some(format!("Constant `{}` does not exist", name));
-                }
-                return String::new();
-            }
-        };
-        ::util::toml::value_to_string(substitute)
     });
     match first_error {
         None => Ok(replaced),
@@ -57,6 +66,7 @@ pub fn substitute<'a>(command: &str,
             gen(gen_name, &args, context)
         }
         "url" => Ok(format!("<a href=\"{0}\">{0}</a>", rest.trim())),
+        "const" => get_constant_string(rest.trim(), context.config, local_constants),
         _ => Err(format!("Unknown command: {:?}", command).into()),
     }
 }
