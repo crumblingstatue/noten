@@ -1,5 +1,6 @@
 use std::path::Path;
 use std::error::Error;
+use std::time::SystemTime;
 
 #[derive(Debug)]
 enum Segment {
@@ -97,7 +98,7 @@ fn parse(tokens: &[Token]) -> Result<Vec<Segment>, Box<Error>> {
 }
 
 impl Skeleton {
-    pub fn parse_file<P: AsRef<Path>>(path: P) -> Result<Self, Box<Error>> {
+    pub fn parse_file<P: AsRef<Path>>(path: P) -> Result<(Self, SystemTime), Box<Error>> {
         use std::fs::File;
         use std::io::prelude::*;
 
@@ -108,7 +109,7 @@ impl Skeleton {
         debug!("Got tokens: {:#?}", tokens);
         let segments = try!(parse(&tokens));
         debug!("Got segments: {:#?}", segments);
-        Ok(Skeleton { segments: segments })
+        Ok((Skeleton { segments: segments }, f.metadata().unwrap().modified().unwrap()))
     }
     pub fn out(&self,
                title: &str,

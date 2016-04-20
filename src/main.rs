@@ -30,6 +30,7 @@ fn up_to_date(template: &fs::Metadata,
               content: Option<&fs::Metadata>,
               exe_modif: &SystemTime,
               config_modif: &SystemTime,
+              skel_modif: &SystemTime,
               dep_modifs: &[SystemTime])
               -> bool {
     match content {
@@ -41,7 +42,8 @@ fn up_to_date(template: &fs::Metadata,
                     return false;
                 }
             }
-            if *exe_modif > content_modif || *config_modif > content_modif {
+            if *exe_modif > content_modif || *config_modif > content_modif ||
+               *skel_modif > content_modif {
                 false
             } else {
                 let template_modif = template.modified().unwrap();
@@ -56,7 +58,7 @@ fn run(config: Config, exe_modif: &SystemTime, config_modif: &SystemTime) {
     use template_deps::TemplateDeps;
     use std::path::Path;
 
-    let skeleton = skeleton::Skeleton::parse_file(&config.skeleton_template).unwrap();
+    let (skeleton, skel_modif) = skeleton::Skeleton::parse_file(&config.skeleton_template).unwrap();
 
     let mut template_deps = if Path::new(template_deps::PATH).exists() {
         TemplateDeps::open().unwrap()
@@ -113,6 +115,7 @@ fn run(config: Config, exe_modif: &SystemTime, config_modif: &SystemTime) {
                       fs::metadata(&out_path).ok().as_ref(),
                       exe_modif,
                       config_modif,
+                      &skel_modif,
                       &dep_modifs) {
             info!("{:?} is up to date", &path);
             continue;
