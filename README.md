@@ -36,26 +36,24 @@ Any type that TOML accepts is valid.
 The skeleton template is used as the skeleton for generating the output for each page.
 It exists because a website usually has a basic skeleton that is the same
 for all pages (e.g. the header, the menu, etc), and should not be repeated
-manually. It has a few special powers that are not available in normal templates.
+manually. You can use skeleton substitution commands in skeleton templates.
 
-## Special substitution commands
-It has the following special substitution commands that are not available in normal
-templates.
+## Skeleton substitution commands
+Skeleton substitution commands are contained within %().
+Example: `%(title)`.
 
-name         | desc
------------- | ----
-title        | Title of the child template
-description  | Description of the child template (optional)
-content      | The content of the child template
-if-exists    | Used for handling optional substitution commands
+They are the following:
 
-### if-exists
-`if-exists <name> <template-string>`
+name            | desc
+--------------- | ----
+title           | Title of the child template
+description     | Description of the child template (optional)
+content         | The content of the child template
+ifdesc          | Only emits the contents if the description exists
 
-It checks if the substitution command with `<name>` exists, if it does, it
-emits the template `<template-string>`, otherwise, it does nothing.
+### ifdesc
 
-If a template string is emitted, it is then expanded like any other template.
+ifdesc must be delimited by `%(endifdesc)`.
 
 # Processing the templates
 Noten reads each template in the `directories.input` directory, processes them,

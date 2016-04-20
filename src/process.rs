@@ -5,6 +5,7 @@ use hoedown::{self, Html, Markdown, Render};
 use std::error::Error;
 use std::path::Path;
 use template_deps::TemplateDeps;
+use skeleton::Skeleton;
 
 #[derive(Default)]
 struct Attributes {
@@ -95,8 +96,10 @@ pub struct ProcessingContext<'a> {
 }
 
 /// Process a template
-pub fn process(input: String, context: &mut ProcessingContext) -> Result<String, Box<Error>> {
-    use std::borrow::Cow;
+pub fn process(input: String,
+               context: &mut ProcessingContext,
+               skeleton: &Skeleton)
+               -> Result<String, Box<Error>> {
     context.template_deps.clear_deps(context.template_path);
     let mut output = String::new();
     let (attribs, mut from) = try!(read_attributes(&input));
@@ -128,29 +131,9 @@ pub fn process(input: String, context: &mut ProcessingContext) -> Result<String,
     }
     let doc = Markdown::new(&output).extensions(hoedown::TABLES);
     let mut html = Html::new(hoedown::renderer::html::Flags::empty(), 0);
-    let desc_fun: Option<Cow<_>> = attribs.description.map(|desc| {
-        format!("function description()
-{{
-    return \"{}\";
-}}",
-                desc)
-            .into()
-    });
-    Ok(format!("<?php
-function title()
-{{
-    return \"{title}\";
-}}
-{desc}
-function content()
-{{
-?>
-{output}
-<?php
-}}
-?>
-",
-               title = title,
-               output = html.render(&doc).to_str().expect("markdown=>html failed"),
-               desc = desc_fun.unwrap_or("".into())))
+    let render_result = html.render(&doc);
+    let output = render_result.to_str().expect("markdown=>html failed");
+    skeleton.out(&title,
+                 &output,
+                 attribs.description.as_ref().map(|s| &s[..]))
 }

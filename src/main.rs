@@ -16,6 +16,7 @@ mod process;
 mod substitution;
 mod util;
 mod template_deps;
+mod skeleton;
 
 use config::{Config, ReadError};
 
@@ -55,6 +56,8 @@ fn run(config: Config, exe_modif: &SystemTime, config_modif: &SystemTime) {
     use template_deps::TemplateDeps;
     use std::path::Path;
 
+    let skeleton = skeleton::Skeleton::parse_file(&config.skeleton_template).unwrap();
+
     let mut template_deps = if Path::new(template_deps::PATH).exists() {
         TemplateDeps::open().unwrap()
     } else {
@@ -86,9 +89,10 @@ fn run(config: Config, exe_modif: &SystemTime, config_modif: &SystemTime) {
             continue;
         }
         debug!("Checking up-to-dateness of {:?}", path);
-        let mut stem = path.file_stem().expect("File doesnt' have a stem. The fuck?").to_owned();
-        stem.push(".php");
-        let out_path = config.output_dir.join(stem);
+        let stem = path.file_stem().expect("File doesnt' have a stem. The fuck?").to_owned();
+        let mut out_filename = stem.clone();
+        out_filename.push(".html");
+        let out_path = config.output_dir.join(out_filename);
         let mut dep_modifs = Vec::new();
         if let Some(deps) = template_deps.hash_map.get(&path) {
             for path in deps {
@@ -132,7 +136,7 @@ fn run(config: Config, exe_modif: &SystemTime, config_modif: &SystemTime) {
             template_deps: &mut template_deps,
             config: &config,
         };
-        let processed = match process::process(template, &mut context) {
+        let processed = match process::process(template, &mut context, &skeleton) {
             Ok(processed) => processed,
             Err(e) => {
                 error!("Failed to process template {:?}: {}", &path, e);
@@ -149,6 +153,12 @@ fn run(config: Config, exe_modif: &SystemTime, config_modif: &SystemTime) {
         if let Err(e) = file.write_all(processed.as_bytes()) {
             error!("Failed to write output {:?}: {}", &out_path, e);
             return;
+        }
+        if stem.to_str().expect("Index doc path is not UTF-8") == config.index_doc {
+            if let Err(e) = std::fs::copy(&out_path, "index.html") {
+                error!("Failed to copy to index.html: {}", e);
+                return;
+            }
         }
     }
     template_deps.save().unwrap();
