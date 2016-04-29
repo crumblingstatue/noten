@@ -78,18 +78,18 @@ fn gen(gen_name: &str,
     use std::process::{Command, Stdio};
 
     let cfg_generators_dir = context.config
-                                    .generators_dir
-                                    .as_ref()
-                                    .expect("Gen requested but no generators dir");
+        .generators_dir
+        .as_ref()
+        .expect("Gen requested but no generators dir");
     let generator_dir = cfg_generators_dir.join(gen_name);
     if !generator_dir.exists() {
         panic!("{:?} does not exist.", generator_dir);
     }
     let mut cmd = Command::new("cargo");
     cmd.current_dir(&generator_dir)
-       .stdout(Stdio::inherit())
-       .arg("build")
-       .arg("--release");
+        .stdout(Stdio::inherit())
+        .arg("build")
+        .arg("--release");
     let status = cmd.status().expect("Failed to spawn cargo");
     if !status.success() {
         panic!("cargo failed");

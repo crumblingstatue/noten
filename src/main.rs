@@ -174,9 +174,9 @@ fn main() {
         Ok((config, config_modif)) => {
             util::fs::create_dir_if_not_exists(".noten").unwrap();
             let exe_modif = fs::metadata(::std::env::current_exe().unwrap())
-                                .unwrap()
-                                .modified()
-                                .unwrap();
+                .unwrap()
+                .modified()
+                .unwrap();
             run(config, &exe_modif, &config_modif);
         }
         Err(ReadError::Io(err)) => {
