@@ -75,6 +75,7 @@ fn run(config: Config, exe_modif: &SystemTime, config_modif: &SystemTime) {
             return;
         }
     };
+    let mut out_files = Vec::new();
     for en in entries {
         let en = match en {
             Ok(en) => en,
@@ -95,6 +96,7 @@ fn run(config: Config, exe_modif: &SystemTime, config_modif: &SystemTime) {
         let mut out_filename = stem.clone();
         out_filename.push(".html");
         let out_path = config.output_dir.join(out_filename);
+        out_files.push(out_path.clone());
         let mut dep_modifs = Vec::new();
         if let Some(deps) = template_deps.hash_map.get(&path) {
             for path in deps {
@@ -162,6 +164,13 @@ fn run(config: Config, exe_modif: &SystemTime, config_modif: &SystemTime) {
                 error!("Failed to copy to index.html: {}", e);
                 return;
             }
+        }
+    }
+    for en in fs::read_dir(&config.output_dir).unwrap() {
+        let path = en.unwrap().path();
+        if !out_files.contains(&path) {
+            println!("Removing non-generated artifact {:?}", path);
+            fs::remove_file(path).unwrap();
         }
     }
     template_deps.save().unwrap();
