@@ -1,5 +1,3 @@
-#![feature(fs_time)]
-
 extern crate toml;
 #[macro_use]
 extern crate quick_error;
