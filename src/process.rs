@@ -133,7 +133,5 @@ pub fn process(input: String,
     let mut html = Html::new(hoedown::renderer::html::Flags::empty(), 0);
     let render_result = html.render(&doc);
     let output = render_result.to_str().expect("markdown=>html failed");
-    skeleton.out(&title,
-                 output,
-                 attribs.description.as_ref().map(|s| &s[..]))
+    skeleton.out(&title, output, attribs.description.as_ref().map(|s| &s[..]))
 }

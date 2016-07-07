@@ -142,9 +142,7 @@ impl Extractor {
 
 #[derive(Debug)]
 pub enum ExtractError {
-    Missing {
-        name: String,
-    },
+    Missing { name: String },
     TypeMismatch {
         name: String,
         expected: &'static str,
