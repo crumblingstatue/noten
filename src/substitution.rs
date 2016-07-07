@@ -58,7 +58,7 @@ pub fn substitute<'a>(command: &str,
     debug!("Command: {:?}, Rest: {:?}", command, rest);
     match command {
         "gen" => {
-            let caps = re.captures(&rest).unwrap();
+            let caps = re.captures(rest).unwrap();
             let gen_name = &caps[1];
             let rest = &caps[2];
             debug!("Gen: {:?}, Rest: {:?}", gen_name, rest);

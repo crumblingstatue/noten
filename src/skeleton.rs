@@ -149,7 +149,7 @@ fn out_segs(segments: &[Segment],
                     None => "",
                 }
             }
-            Segment::Text(ref text) => &text,
+            Segment::Text(ref text) => text,
             Segment::Title => title,
         };
         out.push_str(s);

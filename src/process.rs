@@ -134,6 +134,6 @@ pub fn process(input: String,
     let render_result = html.render(&doc);
     let output = render_result.to_str().expect("markdown=>html failed");
     skeleton.out(&title,
-                 &output,
+                 output,
                  attribs.description.as_ref().map(|s| &s[..]))
 }
