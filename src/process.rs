@@ -1,11 +1,11 @@
 use config::Config;
-use toml;
-use substitution::substitute;
 use hoedown::{self, Html, Markdown, Render};
+use skeleton::Skeleton;
 use std::error::Error;
 use std::path::Path;
+use substitution::substitute;
 use template_deps::TemplateDeps;
-use skeleton::Skeleton;
+use toml;
 
 #[derive(Default)]
 struct Attributes {

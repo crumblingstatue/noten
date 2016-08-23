@@ -1,7 +1,8 @@
-use std::error::Error;
+
 use config::Config;
-use regex::{Captures, Regex};
 use process::ProcessingContext;
+use regex::{Captures, Regex};
+use std::error::Error;
 use toml;
 
 fn get_constant_string(name: &str,
