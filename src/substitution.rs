@@ -1,4 +1,3 @@
-
 use config::Config;
 use process::ProcessingContext;
 use regex::{Captures, Regex};
