@@ -33,7 +33,7 @@ fn expand_constants(command: &str,
         match get_constant_string(name, config, local_constants) {
             Ok(c) => c,
             Err(e) => {
-                if let None = first_error {
+                if first_error.is_none() {
                     first_error = Some(e);
                 }
                 String::new()
