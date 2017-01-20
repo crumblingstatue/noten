@@ -59,12 +59,12 @@ pub fn read() -> Result<(Config, SystemTime), ReadError> {
         None => toml::Table::new(),
     };
     Ok((Config {
-        skeleton_template: skeleton_template,
-        index_doc: index_doc,
-        input_dir: input_dir,
-        output_dir: output_dir,
-        generators_dir: generators_dir,
-        constants: constants,
-    },
+            skeleton_template: skeleton_template,
+            index_doc: index_doc,
+            input_dir: input_dir,
+            output_dir: output_dir,
+            generators_dir: generators_dir,
+            constants: constants,
+        },
         file.metadata().unwrap().modified().unwrap()))
 }
