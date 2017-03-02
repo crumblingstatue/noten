@@ -65,11 +65,11 @@ fn find_title(input: &str) -> Result<&str, Box<Error>> {
     };
     // Try a markdown header first
     match MD.captures(line) {
-        Some(caps) => Ok(caps.at(1).unwrap().trim()),
+        Some(caps) => Ok(caps.get(1).unwrap().as_str().trim()),
         None => {
             // Try the HTML header
             match HTML.captures(line) {
-                Some(caps) => Ok(caps.at(1).unwrap().trim()),
+                Some(caps) => Ok(caps.get(1).unwrap().as_str().trim()),
                 None => Err(format!("\"{}\" is not a valid header", line).into()),
             }
         }

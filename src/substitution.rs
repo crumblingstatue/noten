@@ -29,7 +29,7 @@ fn expand_constants(command: &str,
     let re = Regex::new("%([a-z-]+)").unwrap();
     let mut first_error = None;
     let replaced = re.replace_all(command, |caps: &Captures| {
-        let name = caps.at(1).expect("No capture found.");
+        let name = caps.get(1).expect("No capture found.").as_str();
         match get_constant_string(name, config, local_constants) {
             Ok(c) => c,
             Err(e) => {
@@ -41,7 +41,7 @@ fn expand_constants(command: &str,
         }
     });
     match first_error {
-        None => Ok(replaced),
+        None => Ok(replaced.into()),
         Some(err) => Err(err.into()),
     }
 }
@@ -53,8 +53,8 @@ pub fn substitute<'a>(command: &str,
     let command = try!(expand_constants(command.trim(), context.config, local_constants));
     let re = Regex::new("([a-z]+)(.*)").unwrap();
     let caps = re.captures(&command).unwrap();
-    let command = caps.at(1).expect("No command");
-    let rest = caps.at(2).expect("No rest");
+    let command = caps.get(1).expect("No command").as_str();
+    let rest = caps.get(2).expect("No rest").as_str();
     debug!("Command: {:?}, Rest: {:?}", command, rest);
     match command {
         "gen" => {
