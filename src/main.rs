@@ -194,5 +194,6 @@ fn main() {
                    config::FILENAME,
                    err)
         }
+        Err(ReadError::De(err)) => error!("Failed to parse {}: {}", config::FILENAME, err),
     }
 }

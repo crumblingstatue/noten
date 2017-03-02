@@ -28,6 +28,9 @@ quick_error! {
         Io(err: io::Error) {
             from()
         }
+        De(err: toml::de::Error) {
+            from()
+        }
     }
 }
 
@@ -36,7 +39,7 @@ pub fn read() -> Result<(Config, SystemTime), ReadError> {
     let mut file = try!(File::open(FILENAME));
     let mut text = String::new();
     try!(file.read_to_string(&mut text));
-    let config = toml::from_str(&text).unwrap();
+    let config = toml::from_str(&text)?;
     let time = file.metadata().unwrap().modified().unwrap();
     Ok((config, time))
 }
