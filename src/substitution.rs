@@ -6,7 +6,7 @@ use toml;
 
 fn get_constant_string(name: &str,
                        config: &Config,
-                       local_constants: Option<&toml::Table>)
+                       local_constants: Option<&toml::value::Table>)
                        -> Result<String, Box<Error>> {
     let constants = &config.constants;
     // Check in local constants first, since they shadow global ones
@@ -24,7 +24,7 @@ fn get_constant_string(name: &str,
 
 fn expand_constants(command: &str,
                     config: &Config,
-                    local_constants: Option<&toml::Table>)
+                    local_constants: Option<&toml::value::Table>)
                     -> Result<String, Box<Error>> {
     let re = Regex::new("%([a-z-]+)").unwrap();
     let mut first_error = None;
@@ -48,7 +48,7 @@ fn expand_constants(command: &str,
 
 pub fn substitute<'a>(command: &str,
                       context: &mut ProcessingContext<'a>,
-                      local_constants: Option<&toml::Table>)
+                      local_constants: Option<&toml::value::Table>)
                       -> Result<String, Box<Error>> {
     let command = try!(expand_constants(command.trim(), context.config, local_constants));
     let re = Regex::new("([a-z]+)(.*)").unwrap();
@@ -76,11 +76,15 @@ fn gen(gen_name: &str,
        context: &mut ProcessingContext)
        -> Result<String, Box<Error>> {
     use std::process::{Command, Stdio};
+    use std::path::Path;
 
-    let cfg_generators_dir = context.config
-        .generators_dir
+    let cfg_generators_dir: &Path = context.config
+        .directories
+        .generators
         .as_ref()
-        .expect("Gen requested but no generators dir");
+        .expect("Gen requested but no generators dir")
+        .as_ref();
+
     let generator_dir = cfg_generators_dir.join(gen_name);
     if !generator_dir.exists() {
         panic!("{:?} does not exist.", generator_dir);

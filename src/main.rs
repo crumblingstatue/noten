@@ -8,6 +8,9 @@ extern crate regex;
 extern crate hoedown;
 #[macro_use]
 extern crate lazy_static;
+#[macro_use]
+extern crate serde_derive;
+extern crate serde;
 
 mod config;
 mod process;
@@ -51,12 +54,12 @@ fn up_to_date(template: &fs::Metadata,
     }
 }
 
-fn run(config: Config, exe_modif: &SystemTime, config_modif: &SystemTime) {
+fn run(config: &Config, exe_modif: &SystemTime, config_modif: &SystemTime) {
     use process::ProcessingContext;
     use template_deps::TemplateDeps;
     use std::path::Path;
 
-    let (skeleton, skel_modif) = skeleton::Skeleton::parse_file(&config.skeleton_template).unwrap();
+    let (skeleton, skel_modif) = skeleton::Skeleton::parse_file(&config.skeleton).unwrap();
 
     let mut template_deps = if Path::new(template_deps::PATH).exists() {
         TemplateDeps::open().unwrap()
@@ -64,11 +67,11 @@ fn run(config: Config, exe_modif: &SystemTime, config_modif: &SystemTime) {
         TemplateDeps::default()
     };
 
-    let entries = match fs::read_dir(&config.input_dir) {
+    let entries = match fs::read_dir(&config.directories.input) {
         Ok(entries) => entries,
         Err(e) => {
             error!("Failed to read input directory {:?}: {}",
-                   config.input_dir,
+                   config.directories.input,
                    e);
             return;
         }
@@ -93,7 +96,7 @@ fn run(config: Config, exe_modif: &SystemTime, config_modif: &SystemTime) {
         let stem = path.file_stem().expect("File doesnt' have a stem. The fuck?").to_owned();
         let mut out_filename = stem.clone();
         out_filename.push(".html");
-        let out_path = config.output_dir.join(out_filename);
+        let out_path = AsRef::<Path>::as_ref(&config.directories.output).join(out_filename);
         out_files.push(out_path.clone());
         let mut dep_modifs = Vec::new();
         if let Some(deps) = template_deps.hash_map.get(&path) {
@@ -137,9 +140,9 @@ fn run(config: Config, exe_modif: &SystemTime, config_modif: &SystemTime) {
         let mut context = ProcessingContext {
             template_path: &path,
             template_deps: &mut template_deps,
-            config: &config,
+            config: config,
         };
-        let processed = match process::process(template, &mut context, &skeleton) {
+        let processed = match process::process(&template, &mut context, &skeleton) {
             Ok(processed) => processed,
             Err(e) => {
                 error!("Failed to process template {:?}: {}", &path, e);
@@ -157,14 +160,14 @@ fn run(config: Config, exe_modif: &SystemTime, config_modif: &SystemTime) {
             error!("Failed to write output {:?}: {}", &out_path, e);
             return;
         }
-        if stem.to_str().expect("Index doc path is not UTF-8") == config.index_doc {
+        if stem.to_str().expect("Index doc path is not UTF-8") == config.index {
             if let Err(e) = std::fs::copy(&out_path, "index.html") {
                 error!("Failed to copy to index.html: {}", e);
                 return;
             }
         }
     }
-    for en in fs::read_dir(&config.output_dir).unwrap() {
+    for en in fs::read_dir(&config.directories.output).unwrap() {
         let path = en.unwrap().path();
         if !out_files.contains(&path) {
             println!("Removing non-generated artifact {:?}", path);
@@ -184,30 +187,12 @@ fn main() {
                 .unwrap()
                 .modified()
                 .unwrap();
-            run(config, &exe_modif, &config_modif);
+            run(&config, &exe_modif, &config_modif);
         }
         Err(ReadError::Io(err)) => {
             error!("Failed opening {} ({}). Not a valid noten project.",
                    config::FILENAME,
                    err)
-        }
-        Err(ReadError::TomlParser(msg)) => error!("Failed to parse {}:\n{}", config::FILENAME, msg),
-        Err(ReadError::Extract(err)) => {
-            use util::toml::ExtractError;
-            match err {
-                ExtractError::Missing { name } => {
-                    error!("{}: The field `{}` is required, but missing.",
-                           config::FILENAME,
-                           name)
-                }
-                ExtractError::TypeMismatch { name, expected, got } => {
-                    error!("{}: Field `{}` should be of type `{}`, but it is `{}`.",
-                           config::FILENAME,
-                           name,
-                           expected,
-                           got)
-                }
-            }
         }
     }
 }

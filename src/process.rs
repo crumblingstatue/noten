@@ -7,11 +7,11 @@ use substitution::substitute;
 use template_deps::TemplateDeps;
 use toml;
 
-#[derive(Default)]
+#[derive(Default, Deserialize)]
 struct Attributes {
     title: Option<String>,
     description: Option<String>,
-    constants: Option<toml::Table>,
+    constants: Option<toml::value::Table>,
 }
 
 /// Reads the optional attribute section at the beginning of the template.
@@ -23,31 +23,8 @@ fn read_attributes(input: &str) -> Result<(Attributes, usize), Box<Error>> {
         return Ok((Default::default(), 0));
     }
     let closing_brace_pos = input.find('}').expect("Expected closing }");
-    let attribs = {
-        let attribs = &input[1..closing_brace_pos];
-        let mut parser = toml::Parser::new(attribs);
-        match parser.parse() {
-            Some(toml) => toml,
-            None => {
-                let toml_error = ::util::toml::parser_error_to_string(&parser);
-                let msg = format!("Failed to parse attribute TOML:\n{}", toml_error);
-                return Err(msg.into());
-            }
-        }
-    };
-    let title = attribs.get("title").and_then(|v| v.as_str()).map(|s| s.to_owned());
-    let desc = attribs.get("description").and_then(|v| v.as_str()).map(|s| s.to_owned());
     let end = closing_brace_pos + 1;
-    let consts = match attribs.get("constants") {
-        Some(&toml::Value::Table(ref table)) => Some(table.clone()),
-        Some(_) => return Err("`constants` attribute should be a toml table.".into()),
-        None => None,
-    };
-    let attribs = Attributes {
-        title: title,
-        description: desc,
-        constants: consts,
-    };
+    let attribs = toml::from_str(&input[1..closing_brace_pos]).unwrap();
     Ok((attribs, end))
 }
 
@@ -96,7 +73,7 @@ pub struct ProcessingContext<'a> {
 }
 
 /// Process a template
-pub fn process(input: String,
+pub fn process(input: &str,
                context: &mut ProcessingContext,
                skeleton: &Skeleton)
                -> Result<String, Box<Error>> {

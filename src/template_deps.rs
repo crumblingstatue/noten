@@ -19,8 +19,7 @@ impl TemplateDeps {
         let mut f = try!(File::open(PATH));
         let mut s = String::new();
         try!(f.read_to_string(&mut s));
-        let mut parser = toml::Parser::new(&s);
-        let table = parser.parse().unwrap();
+        let table: toml::value::Table = toml::from_str(&s).unwrap();
         let mut hash_map = HashMap::new();
         for (k, v) in &table {
             let k: PathBuf = k.into();
@@ -56,18 +55,18 @@ impl TemplateDeps {
         use std::fs::File;
         use std::io::prelude::*;
 
-        let mut table = toml::Table::new();
+        let mut table = toml::value::Table::new();
         for (k, v) in &self.hash_map {
             let tp = k.to_string_lossy().into_owned();
-            let mut array = toml::Array::new();
+            let mut array = toml::value::Array::new();
             for p in v {
                 let dp = p.to_string_lossy().into_owned();
                 array.push(toml::Value::String(dp));
             }
             table.insert(tp, toml::Value::Array(array));
         }
-        let str = toml::encode_str(&table);
+        let bytes = toml::ser::to_vec(&table).unwrap();
         let mut f = try!(File::create(PATH));
-        f.write_all(str.as_bytes())
+        f.write_all(&bytes)
     }
 }
