@@ -79,7 +79,7 @@ pub fn process(input: &str,
                -> Result<String, Box<Error>> {
     context.template_deps.clear_deps(context.template_path);
     let mut output = String::new();
-    let (attribs, mut from) = try!(read_attributes(&input));
+    let (attribs, mut from) = try!(read_attributes(input));
     let title = match attribs.title {
         Some(title) => title,
         None => try!(find_title(&input[from..])).to_owned(),
