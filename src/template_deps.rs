@@ -16,9 +16,9 @@ impl TemplateDeps {
         use std::fs::File;
         use std::io::prelude::*;
 
-        let mut f = try!(File::open(PATH));
+        let mut f = File::open(PATH)?;
         let mut s = String::new();
-        try!(f.read_to_string(&mut s));
+        f.read_to_string(&mut s)?;
         let table: toml::value::Table = toml::from_str(&s).unwrap();
         let mut hash_map = HashMap::new();
         for (k, v) in &table {
@@ -69,7 +69,7 @@ impl TemplateDeps {
             table.insert(tp, toml::Value::Array(array));
         }
         let bytes = toml::ser::to_vec(&table).unwrap();
-        let mut f = try!(File::create(PATH));
+        let mut f = File::create(PATH)?;
         f.write_all(&bytes)
     }
 }

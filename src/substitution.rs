@@ -50,7 +50,7 @@ pub fn substitute<'a>(command: &str,
                       context: &mut ProcessingContext<'a>,
                       local_constants: Option<&toml::value::Table>)
                       -> Result<String, Box<Error>> {
-    let command = try!(expand_constants(command.trim(), context.config, local_constants));
+    let command = expand_constants(command.trim(), context.config, local_constants)?;
     let re = Regex::new("([a-z]+)(.*)").unwrap();
     let caps = re.captures(&command).unwrap();
     let command = caps.get(1).expect("No command").as_str();
@@ -110,7 +110,7 @@ fn gen(gen_name: &str,
         .output()
         .expect(&format!("Failed to spawn {}", gen_name));
     if output.status.success() {
-        Ok(try!(String::from_utf8(output.stdout)))
+        Ok(String::from_utf8(output.stdout)?)
     } else {
         panic!("{:?} failed.", gen_cmd_path);
     }

@@ -102,12 +102,12 @@ impl Skeleton {
         use std::fs::File;
         use std::io::prelude::*;
 
-        let mut f = try!(File::open(path));
+        let mut f = File::open(path)?;
         let mut s = String::new();
-        try!(f.read_to_string(&mut s));
-        let tokens = try!(lex(&s));
+        f.read_to_string(&mut s)?;
+        let tokens = lex(&s)?;
         debug!("Got tokens: {:#?}", tokens);
-        let segments = try!(parse(&tokens));
+        let segments = parse(&tokens)?;
         debug!("Got segments: {:#?}", segments);
         Ok((Skeleton { segments: segments }, f.metadata().unwrap().modified().unwrap()))
     }
@@ -143,7 +143,7 @@ fn out_segs(segments: &[Segment],
             Segment::IfDesc(ref segs) => {
                 match description {
                     Some(desc) => {
-                        string = try!(out_segs(segs, title, content, Some(desc)));
+                        string = out_segs(segs, title, content, Some(desc))?;
                         &string
                     }
                     None => "",

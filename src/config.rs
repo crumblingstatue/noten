@@ -36,9 +36,9 @@ quick_error! {
 
 /// Reads the configuration, returns (config, last-modified).
 pub fn read() -> Result<(Config, SystemTime), ReadError> {
-    let mut file = try!(File::open(FILENAME));
+    let mut file = File::open(FILENAME)?;
     let mut text = String::new();
-    try!(file.read_to_string(&mut text));
+    file.read_to_string(&mut text)?;
     let config = toml::from_str(&text)?;
     let time = file.metadata().unwrap().modified().unwrap();
     Ok((config, time))
