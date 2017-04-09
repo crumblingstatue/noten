@@ -93,7 +93,9 @@ fn run(config: &Config, exe_modif: &SystemTime, config_modif: &SystemTime) {
             continue;
         }
         debug!("Checking up-to-dateness of {:?}", path);
-        let stem = path.file_stem().expect("File doesnt' have a stem. The fuck?").to_owned();
+        let stem = path.file_stem()
+            .expect("File doesnt' have a stem. The fuck?")
+            .to_owned();
         let mut out_filename = stem.clone();
         out_filename.push(".html");
         let out_path = AsRef::<Path>::as_ref(&config.directories.output).join(out_filename);

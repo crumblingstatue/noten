@@ -18,7 +18,10 @@ struct Attributes {
 ///
 /// Reurns `Attributes`, and the end position of the attribute section.
 fn read_attributes(input: &str) -> Result<(Attributes, usize), Box<Error>> {
-    let first_char = input.chars().next().expect("Couldn't get first character");
+    let first_char = input
+        .chars()
+        .next()
+        .expect("Couldn't get first character");
     if first_char != '{' {
         return Ok((Default::default(), 0));
     }
@@ -91,7 +94,9 @@ pub fn process(input: &str,
             Some(pos) => {
                 debug!("Found {{{{ @ {}", pos);
                 output.push_str(&input[from..from + pos]);
-                let closing_pos = input[from + pos..].find("}}").expect("Expected closing }}");
+                let closing_pos = input[from + pos..]
+                    .find("}}")
+                    .expect("Expected closing }}");
                 let substitution = &input[from + pos + 2..from + pos + closing_pos];
                 match substitute(substitution, context, attribs.constants.as_ref()) {
                     Ok(text) => output.push_str(&text),

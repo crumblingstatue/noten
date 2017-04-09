@@ -136,7 +136,7 @@ fn out_segs(segments: &[Segment],
                     None => {
                         return Err("Tried to get description when it didn't exist. \
                                     Try putting it in an ifdesc block."
-                            .into())
+                                           .into())
                     }
                 }
             }

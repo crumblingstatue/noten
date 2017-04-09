@@ -78,7 +78,8 @@ fn gen(gen_name: &str,
     use std::process::{Command, Stdio};
     use std::path::Path;
 
-    let cfg_generators_dir: &Path = context.config
+    let cfg_generators_dir: &Path = context
+        .config
         .directories
         .generators
         .as_ref()
@@ -100,10 +101,14 @@ fn gen(gen_name: &str,
     }
     let gen_cmd_path = generator_dir.join(format!("target/release/{}", gen_name));
     debug!("Gen command path is {:?}", gen_cmd_path);
-    context.template_deps.add_dep(context.template_path.to_owned(), gen_cmd_path.to_owned());
+    context
+        .template_deps
+        .add_dep(context.template_path.to_owned(), gen_cmd_path.to_owned());
     let mut gen_cmd = Command::new(&gen_cmd_path);
     gen_cmd.args(args);
-    let output = gen_cmd.output().expect(&format!("Failed to spawn {}", gen_name));
+    let output = gen_cmd
+        .output()
+        .expect(&format!("Failed to spawn {}", gen_name));
     if output.status.success() {
         Ok(try!(String::from_utf8(output.stdout)))
     } else {

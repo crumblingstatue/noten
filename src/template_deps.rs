@@ -26,7 +26,10 @@ impl TemplateDeps {
             hash_map.insert(k.clone(), Vec::new());
             if let toml::Value::Array(ref vec) = *v {
                 for p in vec {
-                    hash_map.get_mut(&k).unwrap().push(p.as_str().unwrap().into());
+                    hash_map
+                        .get_mut(&k)
+                        .unwrap()
+                        .push(p.as_str().unwrap().into());
                 }
             } else {
                 panic!("Array expected");
