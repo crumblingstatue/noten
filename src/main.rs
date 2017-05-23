@@ -27,13 +27,14 @@ use std::time::SystemTime;
 
 /// Returns whether the entry to process is up-to-date, which
 /// means it does not need processing.
-fn up_to_date(template: &fs::Metadata,
-              content: Option<&fs::Metadata>,
-              exe_modif: &SystemTime,
-              config_modif: &SystemTime,
-              skel_modif: &SystemTime,
-              dep_modifs: &[SystemTime])
-              -> bool {
+fn up_to_date(
+    template: &fs::Metadata,
+    content: Option<&fs::Metadata>,
+    exe_modif: &SystemTime,
+    config_modif: &SystemTime,
+    skel_modif: &SystemTime,
+    dep_modifs: &[SystemTime],
+) -> bool {
     match content {
         None => false,
         Some(content_meta) => {
@@ -44,7 +45,8 @@ fn up_to_date(template: &fs::Metadata,
                 }
             }
             if *exe_modif > content_modif || *config_modif > content_modif ||
-               *skel_modif > content_modif {
+                *skel_modif > content_modif
+            {
                 false
             } else {
                 let template_modif = template.modified().unwrap();
@@ -70,9 +72,11 @@ fn run(config: &Config, exe_modif: &SystemTime, config_modif: &SystemTime) {
     let entries = match fs::read_dir(&config.directories.input) {
         Ok(entries) => entries,
         Err(e) => {
-            error!("Failed to read input directory {:?}: {}",
-                   config.directories.input,
-                   e);
+            error!(
+                "Failed to read input directory {:?}: {}",
+                config.directories.input,
+                e
+            );
             return;
         }
     };
@@ -88,8 +92,10 @@ fn run(config: &Config, exe_modif: &SystemTime, config_modif: &SystemTime) {
 
         let path = en.path();
         if path.extension() != Some("noten".as_ref()) {
-            warn!("Skipping {:?}, because it doesn't have .noten extension",
-                  path);
+            warn!(
+                "Skipping {:?}, because it doesn't have .noten extension",
+                path
+            );
             continue;
         }
         debug!("Checking up-to-dateness of {:?}", path);
@@ -116,12 +122,15 @@ fn run(config: &Config, exe_modif: &SystemTime, config_modif: &SystemTime) {
             }
         }
 
-        if up_to_date(&en.metadata().unwrap(),
-                      fs::metadata(&out_path).ok().as_ref(),
-                      exe_modif,
-                      config_modif,
-                      &skel_modif,
-                      &dep_modifs) {
+        if up_to_date(
+            &en.metadata().unwrap(),
+            fs::metadata(&out_path).ok().as_ref(),
+            exe_modif,
+            config_modif,
+            &skel_modif,
+            &dep_modifs,
+        )
+        {
             info!("{:?} is up to date", &path);
             continue;
         }
@@ -192,9 +201,11 @@ fn main() {
             run(&config, &exe_modif, &config_modif);
         }
         Err(ReadError::Io(err)) => {
-            error!("Failed opening {} ({}). Not a valid noten project.",
-                   config::FILENAME,
-                   err)
+            error!(
+                "Failed opening {} ({}). Not a valid noten project.",
+                config::FILENAME,
+                err
+            )
         }
         Err(ReadError::De(err)) => error!("Failed to parse {}: {}", config::FILENAME, err),
     }

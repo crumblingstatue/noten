@@ -18,10 +18,7 @@ struct Attributes {
 ///
 /// Reurns `Attributes`, and the end position of the attribute section.
 fn read_attributes(input: &str) -> Result<(Attributes, usize), Box<Error>> {
-    let first_char = input
-        .chars()
-        .next()
-        .expect("Couldn't get first character");
+    let first_char = input.chars().next().expect("Couldn't get first character");
     if first_char != '{' {
         return Ok((Default::default(), 0));
     }
@@ -59,13 +56,19 @@ fn find_title(input: &str) -> Result<&str, Box<Error>> {
 #[test]
 fn test_find_title() {
     ::env_logger::init().unwrap();
-    assert_eq!(find_title("## Tales of Something\n").unwrap(),
-               "Tales of Something");
+    assert_eq!(
+        find_title("## Tales of Something\n").unwrap(),
+        "Tales of Something"
+    );
     assert_eq!(find_title("# Masszázs\n").unwrap(), "Masszázs");
-    assert_eq!(find_title("<h2>Elérhetőség</h2>\n").unwrap(),
-               "Elérhetőség");
-    assert_eq!(find_title("<h2> Asszisztok betegségekre és sérülésekre </h2>").unwrap(),
-               "Asszisztok betegségekre és sérülésekre");
+    assert_eq!(
+        find_title("<h2>Elérhetőség</h2>\n").unwrap(),
+        "Elérhetőség"
+    );
+    assert_eq!(
+        find_title("<h2> Asszisztok betegségekre és sérülésekre </h2>").unwrap(),
+        "Asszisztok betegségekre és sérülésekre"
+    );
     assert_eq!(find_title("<h2>Title</h2>\n# Junk\n").unwrap(), "Title");
 }
 
@@ -76,10 +79,11 @@ pub struct ProcessingContext<'a> {
 }
 
 /// Process a template
-pub fn process(input: &str,
-               context: &mut ProcessingContext,
-               skeleton: &Skeleton)
-               -> Result<String, Box<Error>> {
+pub fn process(
+    input: &str,
+    context: &mut ProcessingContext,
+    skeleton: &Skeleton,
+) -> Result<String, Box<Error>> {
     context.template_deps.clear_deps(context.template_path);
     let mut output = String::new();
     let (attribs, mut from) = read_attributes(input)?;
@@ -94,9 +98,7 @@ pub fn process(input: &str,
             Some(pos) => {
                 debug!("Found {{{{ @ {}", pos);
                 output.push_str(&input[from..from + pos]);
-                let closing_pos = input[from + pos..]
-                    .find("}}")
-                    .expect("Expected closing }}");
+                let closing_pos = input[from + pos..].find("}}").expect("Expected closing }}");
                 let substitution = &input[from + pos + 2..from + pos + closing_pos];
                 match substitute(substitution, context, attribs.constants.as_ref()) {
                     Ok(text) => output.push_str(&text),

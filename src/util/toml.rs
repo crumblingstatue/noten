@@ -14,7 +14,9 @@ pub fn value_to_string(value: &toml::Value) -> String {
 
 #[test]
 fn test_value_to_string() {
-    assert_eq!(value_to_string(&toml::Value::String("hello".into())),
-               "hello");
+    assert_eq!(
+        value_to_string(&toml::Value::String("hello".into())),
+        "hello"
+    );
     assert_eq!(value_to_string(&toml::Value::Integer(763)), "763");
 }

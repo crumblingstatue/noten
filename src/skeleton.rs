@@ -109,22 +109,26 @@ impl Skeleton {
         debug!("Got tokens: {:#?}", tokens);
         let segments = parse(&tokens)?;
         debug!("Got segments: {:#?}", segments);
-        Ok((Skeleton { segments: segments }, f.metadata().unwrap().modified().unwrap()))
+        Ok(
+            (Skeleton { segments: segments }, f.metadata().unwrap().modified().unwrap()),
+        )
     }
-    pub fn out(&self,
-               title: &str,
-               content: &str,
-               description: Option<&str>)
-               -> Result<String, Box<Error>> {
+    pub fn out(
+        &self,
+        title: &str,
+        content: &str,
+        description: Option<&str>,
+    ) -> Result<String, Box<Error>> {
         out_segs(&self.segments, title, content, description)
     }
 }
 
-fn out_segs(segments: &[Segment],
-            title: &str,
-            content: &str,
-            description: Option<&str>)
-            -> Result<String, Box<Error>> {
+fn out_segs(
+    segments: &[Segment],
+    title: &str,
+    content: &str,
+    description: Option<&str>,
+) -> Result<String, Box<Error>> {
     let mut out = String::new();
     for seg in segments {
         let string;
@@ -134,9 +138,11 @@ fn out_segs(segments: &[Segment],
                 match description {
                     Some(desc) => desc,
                     None => {
-                        return Err("Tried to get description when it didn't exist. \
+                        return Err(
+                            "Tried to get description when it didn't exist. \
                                     Try putting it in an ifdesc block."
-                                           .into())
+                                    .into()
+                        )
                     }
                 }
             }

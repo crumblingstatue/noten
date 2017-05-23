@@ -4,10 +4,11 @@ use regex::{Captures, Regex};
 use std::error::Error;
 use toml;
 
-fn get_constant_string(name: &str,
-                       config: &Config,
-                       local_constants: Option<&toml::value::Table>)
-                       -> Result<String, Box<Error>> {
+fn get_constant_string(
+    name: &str,
+    config: &Config,
+    local_constants: Option<&toml::value::Table>,
+) -> Result<String, Box<Error>> {
     let constants = &config.constants;
     // Check in local constants first, since they shadow global ones
     if let Some(local) = local_constants {
@@ -22,34 +23,38 @@ fn get_constant_string(name: &str,
     }
 }
 
-fn expand_constants(command: &str,
-                    config: &Config,
-                    local_constants: Option<&toml::value::Table>)
-                    -> Result<String, Box<Error>> {
+fn expand_constants(
+    command: &str,
+    config: &Config,
+    local_constants: Option<&toml::value::Table>,
+) -> Result<String, Box<Error>> {
     let re = Regex::new("%([a-z-]+)").unwrap();
     let mut first_error = None;
-    let replaced = re.replace_all(command, |caps: &Captures| {
-        let name = caps.get(1).expect("No capture found.").as_str();
-        match get_constant_string(name, config, local_constants) {
-            Ok(c) => c,
-            Err(e) => {
-                if first_error.is_none() {
-                    first_error = Some(e);
+    let replaced = re.replace_all(
+        command, |caps: &Captures| {
+            let name = caps.get(1).expect("No capture found.").as_str();
+            match get_constant_string(name, config, local_constants) {
+                Ok(c) => c,
+                Err(e) => {
+                    if first_error.is_none() {
+                        first_error = Some(e);
+                    }
+                    String::new()
                 }
-                String::new()
             }
         }
-    });
+    );
     match first_error {
         None => Ok(replaced.into()),
         Some(err) => Err(err.into()),
     }
 }
 
-pub fn substitute<'a>(command: &str,
-                      context: &mut ProcessingContext<'a>,
-                      local_constants: Option<&toml::value::Table>)
-                      -> Result<String, Box<Error>> {
+pub fn substitute<'a>(
+    command: &str,
+    context: &mut ProcessingContext<'a>,
+    local_constants: Option<&toml::value::Table>,
+) -> Result<String, Box<Error>> {
     let command = expand_constants(command.trim(), context.config, local_constants)?;
     let re = Regex::new("([a-z]+)(.*)").unwrap();
     let caps = re.captures(&command).unwrap();
@@ -71,10 +76,11 @@ pub fn substitute<'a>(command: &str,
     }
 }
 
-fn gen(gen_name: &str,
-       args: &[&str],
-       context: &mut ProcessingContext)
-       -> Result<String, Box<Error>> {
+fn gen(
+    gen_name: &str,
+    args: &[&str],
+    context: &mut ProcessingContext,
+) -> Result<String, Box<Error>> {
     use std::process::{Command, Stdio};
     use std::path::Path;
 
