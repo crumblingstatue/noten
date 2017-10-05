@@ -2,7 +2,6 @@ use std::fs::File;
 use std::io;
 use std::io::prelude::*;
 use std::time::SystemTime;
-
 use toml;
 
 pub const FILENAME: &'static str = "noten.toml";

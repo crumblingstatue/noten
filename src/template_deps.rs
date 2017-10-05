@@ -12,9 +12,9 @@ pub const PATH: &'static str = ".noten/template-deps.toml";
 
 impl TemplateDeps {
     pub fn open() -> io::Result<Self> {
-        use toml;
         use std::fs::File;
         use std::io::prelude::*;
+        use toml;
 
         let mut f = File::open(PATH)?;
         let mut s = String::new();
@@ -54,9 +54,9 @@ impl TemplateDeps {
         }
     }
     pub fn save(&self) -> io::Result<()> {
-        use toml;
         use std::fs::File;
         use std::io::prelude::*;
+        use toml;
 
         let mut table = toml::value::Table::new();
         for (k, v) in &self.hash_map {

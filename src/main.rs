@@ -1,16 +1,16 @@
-extern crate toml;
-#[macro_use]
-extern crate quick_error;
-#[macro_use]
-extern crate log;
 extern crate env_logger;
-extern crate regex;
 extern crate hoedown;
 #[macro_use]
 extern crate lazy_static;
 #[macro_use]
-extern crate serde_derive;
+extern crate log;
+#[macro_use]
+extern crate quick_error;
+extern crate regex;
 extern crate serde;
+#[macro_use]
+extern crate serde_derive;
+extern crate toml;
 
 mod config;
 mod process;
@@ -20,7 +20,6 @@ mod template_deps;
 mod skeleton;
 
 use config::{Config, ReadError};
-
 use std::fs::{self, File};
 use std::io::prelude::*;
 use std::time::SystemTime;
@@ -44,8 +43,8 @@ fn up_to_date(
                     return false;
                 }
             }
-            if *exe_modif > content_modif || *config_modif > content_modif ||
-                *skel_modif > content_modif
+            if *exe_modif > content_modif || *config_modif > content_modif
+                || *skel_modif > content_modif
             {
                 false
             } else {
@@ -58,8 +57,8 @@ fn up_to_date(
 
 fn run(config: &Config, exe_modif: &SystemTime, config_modif: &SystemTime) {
     use process::ProcessingContext;
-    use template_deps::TemplateDeps;
     use std::path::Path;
+    use template_deps::TemplateDeps;
 
     let (skeleton, skel_modif) = skeleton::Skeleton::parse_file(&config.skeleton).unwrap();
 
@@ -129,8 +128,7 @@ fn run(config: &Config, exe_modif: &SystemTime, config_modif: &SystemTime) {
             config_modif,
             &skel_modif,
             &dep_modifs,
-        )
-        {
+        ) {
             info!("{:?} is up to date", &path);
             continue;
         }
@@ -200,13 +198,11 @@ fn main() {
                 .unwrap();
             run(&config, &exe_modif, &config_modif);
         }
-        Err(ReadError::Io(err)) => {
-            error!(
-                "Failed opening {} ({}). Not a valid noten project.",
-                config::FILENAME,
-                err
-            )
-        }
+        Err(ReadError::Io(err)) => error!(
+            "Failed opening {} ({}). Not a valid noten project.",
+            config::FILENAME,
+            err
+        ),
         Err(ReadError::De(err)) => error!("Failed to parse {}: {}", config::FILENAME, err),
     }
 }

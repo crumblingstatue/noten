@@ -6,11 +6,9 @@ pub fn create_dir_if_not_exists<P: AsRef<Path>>(path: P) -> Result<(), io::Error
 
     match fs::create_dir(path) {
         Ok(()) => Ok(()),
-        Err(e) => {
-            match e.kind() {
-                ErrorKind::AlreadyExists => Ok(()),
-                _ => Err(e),
-            }
-        }
+        Err(e) => match e.kind() {
+            ErrorKind::AlreadyExists => Ok(()),
+            _ => Err(e),
+        },
     }
 }

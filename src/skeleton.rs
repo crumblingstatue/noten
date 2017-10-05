@@ -73,23 +73,19 @@ fn parse(tokens: &[Token]) -> Result<Vec<Segment>, Box<Error>> {
         match tok {
             Some(&Token::Content) => which!().push(Segment::Content),
             Some(&Token::Description) => which!().push(Segment::Description),
-            Some(&Token::EndIfDesc) => {
-                match state {
-                    State::TopLevel => return Err("endifdesc without preceding ifdesc".into()),
-                    State::IfDesc => {
-                        use std::mem;
-                        let if_segs = mem::replace(&mut if_segs, Vec::new());
-                        segments.push(Segment::IfDesc(if_segs));
-                        state = State::TopLevel;
-                    }
+            Some(&Token::EndIfDesc) => match state {
+                State::TopLevel => return Err("endifdesc without preceding ifdesc".into()),
+                State::IfDesc => {
+                    use std::mem;
+                    let if_segs = mem::replace(&mut if_segs, Vec::new());
+                    segments.push(Segment::IfDesc(if_segs));
+                    state = State::TopLevel;
                 }
-            }
-            Some(&Token::IfDesc) => {
-                match state {
-                    State::TopLevel => state = State::IfDesc,
-                    State::IfDesc => return Err("Nested ifdescs are not supported".into()),
-                }
-            }
+            },
+            Some(&Token::IfDesc) => match state {
+                State::TopLevel => state = State::IfDesc,
+                State::IfDesc => return Err("Nested ifdescs are not supported".into()),
+            },
             Some(&Token::LiteralText(text)) => which!().push(Segment::Text(text.to_owned())),
             Some(&Token::Title) => which!().push(Segment::Title),
             None => return Ok(segments),
@@ -109,9 +105,10 @@ impl Skeleton {
         debug!("Got tokens: {:#?}", tokens);
         let segments = parse(&tokens)?;
         debug!("Got segments: {:#?}", segments);
-        Ok(
-            (Skeleton { segments: segments }, f.metadata().unwrap().modified().unwrap()),
-        )
+        Ok((
+            Skeleton { segments: segments },
+            f.metadata().unwrap().modified().unwrap(),
+        ))
     }
     pub fn out(
         &self,
@@ -134,27 +131,23 @@ fn out_segs(
         let string;
         let s = match *seg {
             Segment::Content => content,
-            Segment::Description => {
-                match description {
-                    Some(desc) => desc,
-                    None => {
-                        return Err(
-                            "Tried to get description when it didn't exist. \
-                                    Try putting it in an ifdesc block."
-                                    .into()
-                        )
-                    }
+            Segment::Description => match description {
+                Some(desc) => desc,
+                None => {
+                    return Err(
+                        "Tried to get description when it didn't exist. \
+                         Try putting it in an ifdesc block."
+                            .into(),
+                    )
                 }
-            }
-            Segment::IfDesc(ref segs) => {
-                match description {
-                    Some(desc) => {
-                        string = out_segs(segs, title, content, Some(desc))?;
-                        &string
-                    }
-                    None => "",
+            },
+            Segment::IfDesc(ref segs) => match description {
+                Some(desc) => {
+                    string = out_segs(segs, title, content, Some(desc))?;
+                    &string
                 }
-            }
+                None => "",
+            },
             Segment::Text(ref text) => text,
             Segment::Title => title,
         };
