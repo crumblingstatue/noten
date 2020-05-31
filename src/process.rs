@@ -55,7 +55,7 @@ fn find_title(input: &str) -> Result<&str, Box<Error>> {
 
 #[test]
 fn test_find_title() {
-    ::env_logger::init().unwrap();
+    ::env_logger::init();
     assert_eq!(
         find_title("## Tales of Something\n").unwrap(),
         "Tales of Something"

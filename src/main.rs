@@ -188,7 +188,7 @@ fn run(config: &Config, exe_modif: &SystemTime, config_modif: &SystemTime) {
 }
 
 fn main() {
-    env_logger::init().unwrap();
+    env_logger::init();
 
     match config::read() {
         Ok((config, config_modif)) => {
