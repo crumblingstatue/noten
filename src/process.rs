@@ -61,10 +61,7 @@ fn test_find_title() {
         "Tales of Something"
     );
     assert_eq!(find_title("# Masszázs\n").unwrap(), "Masszázs");
-    assert_eq!(
-        find_title("<h2>Elérhetőség</h2>\n").unwrap(),
-        "Elérhetőség"
-    );
+    assert_eq!(find_title("<h2>Elérhetőség</h2>\n").unwrap(), "Elérhetőség");
     assert_eq!(
         find_title("<h2> Asszisztok betegségekre és sérülésekre </h2>").unwrap(),
         "Asszisztok betegségekre és sérülésekre"

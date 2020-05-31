@@ -1,5 +1,5 @@
-use std::{fs, io};
 use std::path::Path;
+use std::{fs, io};
 
 pub fn create_dir_if_not_exists<P: AsRef<Path>>(path: P) -> Result<(), io::Error> {
     use std::io::ErrorKind;

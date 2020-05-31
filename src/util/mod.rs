@@ -1,2 +1,2 @@
-pub mod toml;
 pub mod fs;
+pub mod toml;

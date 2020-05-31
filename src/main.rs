@@ -14,10 +14,10 @@ extern crate toml;
 
 mod config;
 mod process;
-mod substitution;
-mod util;
-mod template_deps;
 mod skeleton;
+mod substitution;
+mod template_deps;
+mod util;
 
 use config::{Config, ReadError};
 use std::fs::{self, File};
@@ -43,7 +43,8 @@ fn up_to_date(
                     return false;
                 }
             }
-            if *exe_modif > content_modif || *config_modif > content_modif
+            if *exe_modif > content_modif
+                || *config_modif > content_modif
                 || *skel_modif > content_modif
             {
                 false
@@ -73,8 +74,7 @@ fn run(config: &Config, exe_modif: &SystemTime, config_modif: &SystemTime) {
         Err(e) => {
             error!(
                 "Failed to read input directory {:?}: {}",
-                config.directories.input,
-                e
+                config.directories.input, e
             );
             return;
         }
@@ -98,7 +98,8 @@ fn run(config: &Config, exe_modif: &SystemTime, config_modif: &SystemTime) {
             continue;
         }
         debug!("Checking up-to-dateness of {:?}", path);
-        let stem = path.file_stem()
+        let stem = path
+            .file_stem()
             .expect("File doesnt' have a stem. The fuck?")
             .to_owned();
         let mut out_filename = stem.clone();

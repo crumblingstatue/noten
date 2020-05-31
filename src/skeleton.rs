@@ -62,10 +62,12 @@ fn parse(tokens: &[Token]) -> Result<Vec<Segment>, Box<Error>> {
     let mut iter = tokens.iter();
     let mut state = State::TopLevel;
     macro_rules! which {
-        () => {match state {
-            State::TopLevel => &mut segments,
-            State::IfDesc => &mut if_segs,
-        }}
+        () => {
+            match state {
+                State::TopLevel => &mut segments,
+                State::IfDesc => &mut if_segs,
+            }
+        };
     }
 
     loop {
@@ -134,11 +136,9 @@ fn out_segs(
             Segment::Description => match description {
                 Some(desc) => desc,
                 None => {
-                    return Err(
-                        "Tried to get description when it didn't exist. \
+                    return Err("Tried to get description when it didn't exist. \
                          Try putting it in an ifdesc block."
-                            .into(),
-                    )
+                        .into())
                 }
             },
             Segment::IfDesc(ref segs) => match description {
