@@ -25,7 +25,7 @@ enum Token<'a> {
     Title,
 }
 
-fn lex(text: &str) -> Result<Vec<Token>, Box<Error>> {
+fn lex(text: &str) -> Result<Vec<Token>, Box<dyn Error>> {
     let mut tokens = Vec::new();
     let mut rest = text;
     while let Some(begin) = rest.find("%(") {
@@ -51,7 +51,7 @@ fn lex(text: &str) -> Result<Vec<Token>, Box<Error>> {
     Ok(tokens)
 }
 
-fn parse(tokens: &[Token]) -> Result<Vec<Segment>, Box<Error>> {
+fn parse(tokens: &[Token]) -> Result<Vec<Segment>, Box<dyn Error>> {
     enum State {
         TopLevel,
         IfDesc,
@@ -96,7 +96,7 @@ fn parse(tokens: &[Token]) -> Result<Vec<Segment>, Box<Error>> {
 }
 
 impl Skeleton {
-    pub fn parse_file<P: AsRef<Path>>(path: P) -> Result<(Self, SystemTime), Box<Error>> {
+    pub fn parse_file<P: AsRef<Path>>(path: P) -> Result<(Self, SystemTime), Box<dyn Error>> {
         use std::fs::File;
         use std::io::prelude::*;
 
@@ -108,7 +108,7 @@ impl Skeleton {
         let segments = parse(&tokens)?;
         debug!("Got segments: {:#?}", segments);
         Ok((
-            Skeleton { segments: segments },
+            Skeleton { segments },
             f.metadata().unwrap().modified().unwrap(),
         ))
     }
@@ -117,7 +117,7 @@ impl Skeleton {
         title: &str,
         content: &str,
         description: Option<&str>,
-    ) -> Result<String, Box<Error>> {
+    ) -> Result<String, Box<dyn Error>> {
         out_segs(&self.segments, title, content, description)
     }
 }
@@ -127,7 +127,7 @@ fn out_segs(
     title: &str,
     content: &str,
     description: Option<&str>,
-) -> Result<String, Box<Error>> {
+) -> Result<String, Box<dyn Error>> {
     let mut out = String::new();
     for seg in segments {
         let string;

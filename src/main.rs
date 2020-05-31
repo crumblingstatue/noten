@@ -150,7 +150,7 @@ fn run(config: &Config, exe_modif: &SystemTime, config_modif: &SystemTime) {
         let mut context = ProcessingContext {
             template_path: &path,
             template_deps: &mut template_deps,
-            config: config,
+            config,
         };
         let processed = match process::process(&template, &mut context, &skeleton) {
             Ok(processed) => processed,

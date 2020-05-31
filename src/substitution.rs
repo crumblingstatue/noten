@@ -8,7 +8,7 @@ fn get_constant_string(
     name: &str,
     config: &Config,
     local_constants: Option<&toml::value::Table>,
-) -> Result<String, Box<Error>> {
+) -> Result<String, Box<dyn Error>> {
     let constants = &config.constants;
     // Check in local constants first, since they shadow global ones
     if let Some(local) = local_constants {
@@ -27,7 +27,7 @@ fn expand_constants(
     command: &str,
     config: &Config,
     local_constants: Option<&toml::value::Table>,
-) -> Result<String, Box<Error>> {
+) -> Result<String, Box<dyn Error>> {
     let re = Regex::new("%([a-z-]+)").unwrap();
     let mut first_error = None;
     let replaced = re.replace_all(command, |caps: &Captures| {
@@ -44,7 +44,7 @@ fn expand_constants(
     });
     match first_error {
         None => Ok(replaced.into()),
-        Some(err) => Err(err.into()),
+        Some(err) => Err(err),
     }
 }
 
@@ -52,7 +52,7 @@ pub fn substitute<'a>(
     command: &str,
     context: &mut ProcessingContext<'a>,
     local_constants: Option<&toml::value::Table>,
-) -> Result<String, Box<Error>> {
+) -> Result<String, Box<dyn Error>> {
     let command = expand_constants(command.trim(), context.config, local_constants)?;
     let re = Regex::new("([a-z]+)(.*)").unwrap();
     let caps = re.captures(&command).unwrap();
@@ -78,7 +78,7 @@ fn gen(
     gen_name: &str,
     args: &[&str],
     context: &mut ProcessingContext,
-) -> Result<String, Box<Error>> {
+) -> Result<String, Box<dyn Error>> {
     use std::path::Path;
     use std::process::{Command, Stdio};
 
@@ -112,7 +112,7 @@ fn gen(
     gen_cmd.args(args);
     let output = gen_cmd
         .output()
-        .expect(&format!("Failed to spawn {}", gen_name));
+        .unwrap_or_else(|_| panic!("Failed to spawn {}", gen_name));
     if output.status.success() {
         Ok(String::from_utf8(output.stdout)?)
     } else {

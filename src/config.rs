@@ -4,7 +4,7 @@ use std::io::prelude::*;
 use std::time::SystemTime;
 use toml;
 
-pub const FILENAME: &'static str = "noten.toml";
+pub const FILENAME: &str = "noten.toml";
 
 #[derive(Debug, Deserialize)]
 pub struct Directories {

@@ -8,13 +8,12 @@ pub struct TemplateDeps {
     pub hash_map: HashMap<PathBuf, Vec<PathBuf>>,
 }
 
-pub const PATH: &'static str = ".noten/template-deps.toml";
+pub const PATH: &str = ".noten/template-deps.toml";
 
 impl TemplateDeps {
     pub fn open() -> io::Result<Self> {
         use std::fs::File;
         use std::io::prelude::*;
-        use toml;
 
         let mut f = File::open(PATH)?;
         let mut s = String::new();
@@ -35,7 +34,7 @@ impl TemplateDeps {
                 panic!("Array expected");
             }
         }
-        Ok(TemplateDeps { hash_map: hash_map })
+        Ok(TemplateDeps { hash_map })
     }
     pub fn clear_deps(&mut self, template_path: &Path) {
         if let Some(entry) = self.hash_map.get_mut(template_path) {
@@ -56,7 +55,6 @@ impl TemplateDeps {
     pub fn save(&self) -> io::Result<()> {
         use std::fs::File;
         use std::io::prelude::*;
-        use toml;
 
         let mut table = toml::value::Table::new();
         for (k, v) in &self.hash_map {

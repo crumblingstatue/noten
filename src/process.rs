@@ -17,7 +17,7 @@ struct Attributes {
 /// Reads the optional attribute section at the beginning of the template.
 ///
 /// Reurns `Attributes`, and the end position of the attribute section.
-fn read_attributes(input: &str) -> Result<(Attributes, usize), Box<Error>> {
+fn read_attributes(input: &str) -> Result<(Attributes, usize), Box<dyn Error>> {
     let first_char = input.chars().next().expect("Couldn't get first character");
     if first_char != '{' {
         return Ok((Default::default(), 0));
@@ -28,7 +28,7 @@ fn read_attributes(input: &str) -> Result<(Attributes, usize), Box<Error>> {
     Ok((attribs, end))
 }
 
-fn find_title(input: &str) -> Result<&str, Box<Error>> {
+fn find_title(input: &str) -> Result<&str, Box<dyn Error>> {
     use regex::Regex;
 
     lazy_static! {
@@ -80,7 +80,7 @@ pub fn process(
     input: &str,
     context: &mut ProcessingContext,
     skeleton: &Skeleton,
-) -> Result<String, Box<Error>> {
+) -> Result<String, Box<dyn Error>> {
     context.template_deps.clear_deps(context.template_path);
     let mut output = String::new();
     let (attribs, mut from) = read_attributes(input)?;
