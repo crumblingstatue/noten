@@ -16,16 +16,16 @@ struct Attributes {
 
 /// Reads the optional attribute section at the beginning of the template.
 ///
-/// Reurns `Attributes`, and the end position of the attribute section.
-fn read_attributes(input: &str) -> Result<(Attributes, usize), Box<dyn Error>> {
+/// Returns `Attributes`, and the end position of the attribute section.
+fn read_attributes(input: &str) -> (Attributes, usize) {
     let first_char = input.chars().next().expect("Couldn't get first character");
     if first_char != '{' {
-        return Ok((Default::default(), 0));
+        return (Default::default(), 0);
     }
     let closing_brace_pos = input.find('}').expect("Expected closing }");
     let end = closing_brace_pos + 1;
     let attribs = toml::from_str(&input[1..closing_brace_pos]).unwrap();
-    Ok((attribs, end))
+    (attribs, end)
 }
 
 fn find_title(input: &str) -> Result<&str, Box<dyn Error>> {
@@ -83,7 +83,7 @@ pub fn process(
 ) -> Result<String, Box<dyn Error>> {
     context.template_deps.clear_deps(context.template_path);
     let mut output = String::new();
-    let (attribs, mut from) = read_attributes(input)?;
+    let (attribs, mut from) = read_attributes(input);
     let title = match attribs.title {
         Some(title) => title,
         None => find_title(&input[from..])?.to_owned(),
