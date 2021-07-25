@@ -78,8 +78,7 @@ fn parse(tokens: &[Token]) -> Result<Vec<Segment>, Box<dyn Error>> {
             Some(&Token::EndIfDesc) => match state {
                 State::TopLevel => return Err("endifdesc without preceding ifdesc".into()),
                 State::IfDesc => {
-                    use std::mem;
-                    let if_segs = mem::replace(&mut if_segs, Vec::new());
+                    let if_segs = std::mem::take(&mut if_segs);
                     segments.push(Segment::IfDesc(if_segs));
                     state = State::TopLevel;
                 }
