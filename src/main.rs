@@ -110,15 +110,24 @@ fn run(config: &Config, exe_modif: &SystemTime, config_modif: &SystemTime) {
         if let Some(deps) = template_deps.hash_map.get(&path) {
             for path in deps {
                 use std::process::Command;
-                Command::new("cargo")
+                match Command::new("cargo")
                     .current_dir(path.parent().unwrap())
                     .arg("build")
                     .arg("--release")
                     .status()
-                    .unwrap();
-                let meta = fs::metadata(path).unwrap();
-                let modif = meta.modified().unwrap();
-                dep_modifs.push(modif);
+                {
+                    Ok(status) if status.success() => {
+                        let meta = fs::metadata(path).unwrap();
+                        let modif = meta.modified().unwrap();
+                        dep_modifs.push(modif);
+                    }
+                    Ok(status) => {
+                        eprintln!("Cargo returned with status: {}", status);
+                    }
+                    Err(e) => {
+                        eprintln!("Cargo spawn error: {}", e)
+                    }
+                }
             }
         }
 
