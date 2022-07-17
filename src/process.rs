@@ -1,11 +1,10 @@
-use config::Config;
+use crate::config::Config;
+use crate::skeleton::Skeleton;
+use crate::substitution::substitute;
+use crate::template_deps::TemplateDeps;
 use hoedown::{self, Html, Markdown, Render};
-use skeleton::Skeleton;
 use std::error::Error;
 use std::path::Path;
-use substitution::substitute;
-use template_deps::TemplateDeps;
-use toml;
 
 #[derive(Default, Deserialize)]
 struct Attributes {

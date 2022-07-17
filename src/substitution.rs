@@ -1,8 +1,7 @@
-use config::Config;
-use process::ProcessingContext;
+use crate::config::Config;
+use crate::process::ProcessingContext;
 use regex::{Captures, Regex};
 use std::error::Error;
-use toml;
 
 fn get_constant_string(
     name: &str,
@@ -13,12 +12,12 @@ fn get_constant_string(
     // Check in local constants first, since they shadow global ones
     if let Some(local) = local_constants {
         if let Some(const_) = local.get(name) {
-            return Ok(::util::toml::value_to_string(const_));
+            return Ok(crate::util::toml::value_to_string(const_));
         }
     }
     // Now check in global
     match constants.get(name) {
-        Some(const_) => Ok(::util::toml::value_to_string(const_)),
+        Some(const_) => Ok(crate::util::toml::value_to_string(const_)),
         None => Err(format!("Constant `{}` does not exist", name).into()),
     }
 }
