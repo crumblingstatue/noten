@@ -47,9 +47,9 @@ fn expand_constants(
     }
 }
 
-pub fn substitute<'a>(
+pub fn substitute(
     command: &str,
-    context: &mut ProcessingContext<'a>,
+    context: &mut ProcessingContext,
     local_constants: Option<&toml::value::Table>,
 ) -> Result<String, Box<dyn Error>> {
     let command = expand_constants(command.trim(), context.config, local_constants)?;
