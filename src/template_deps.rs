@@ -66,8 +66,8 @@ impl TemplateDeps {
             }
             table.insert(tp, toml::Value::Array(array));
         }
-        let bytes = toml::ser::to_vec(&table).unwrap();
+        let string = toml::ser::to_string_pretty(&table).unwrap();
         let mut f = File::create(PATH)?;
-        f.write_all(&bytes)
+        f.write_all(string.as_bytes())
     }
 }
