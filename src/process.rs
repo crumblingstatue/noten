@@ -3,10 +3,9 @@ use {
         config::Config, skeleton::Skeleton, substitution::substitute, template_deps::TemplateDeps,
     },
     hoedown::{self, Html, Markdown, Render},
-    lazy_static::lazy_static,
     log::debug,
     serde_derive::Deserialize,
-    std::{error::Error, path::Path},
+    std::{error::Error, path::Path, sync::LazyLock},
 };
 
 #[derive(Default, Deserialize)]
@@ -32,11 +31,8 @@ fn read_attributes(input: &str) -> (Attributes, usize) {
 
 fn find_title(input: &str) -> Result<&str, Box<dyn Error>> {
     use regex::Regex;
-
-    lazy_static! {
-        static ref MD: Regex = Regex::new("#{1, 9}(.*)").unwrap();
-        static ref HTML: Regex = Regex::new("<h[0-9]>(.*)</h[0-9]>").unwrap();
-    }
+    static MD: LazyLock<Regex> = LazyLock::new(|| Regex::new("#{1, 9}(.*)").unwrap());
+    static HTML: LazyLock<Regex> = LazyLock::new(|| Regex::new("<h[0-9]>(.*)</h[0-9]>").unwrap());
     // The first non-empty line will be tried as the title.
     let line = match input.lines().find(|l| !l.is_empty()) {
         Some(line) => line,
