@@ -1,13 +1,13 @@
-use crate::config::Config;
-use crate::skeleton::Skeleton;
-use crate::substitution::substitute;
-use crate::template_deps::TemplateDeps;
-use hoedown::{self, Html, Markdown, Render};
-use lazy_static::lazy_static;
-use log::debug;
-use serde_derive::Deserialize;
-use std::error::Error;
-use std::path::Path;
+use {
+    crate::{
+        config::Config, skeleton::Skeleton, substitution::substitute, template_deps::TemplateDeps,
+    },
+    hoedown::{self, Html, Markdown, Render},
+    lazy_static::lazy_static,
+    log::debug,
+    serde_derive::Deserialize,
+    std::{error::Error, path::Path},
+};
 
 #[derive(Default, Deserialize)]
 struct Attributes {

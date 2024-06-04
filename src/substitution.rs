@@ -1,7 +1,9 @@
-use crate::process::ProcessingContext;
-use regex::{Captures, Regex};
-use std::error::Error;
-use {crate::config::Config, log::debug};
+use {
+    crate::{config::Config, process::ProcessingContext},
+    log::debug,
+    regex::{Captures, Regex},
+    std::error::Error,
+};
 
 fn get_constant_string(
     name: &str,
@@ -78,8 +80,10 @@ fn gen(
     args: &[&str],
     context: &mut ProcessingContext,
 ) -> Result<String, Box<dyn Error>> {
-    use std::path::Path;
-    use std::process::{Command, Stdio};
+    use std::{
+        path::Path,
+        process::{Command, Stdio},
+    };
 
     let cfg_generators_dir: &Path = context
         .config
@@ -109,9 +113,7 @@ fn gen(
         .add_dep(context.template_path.to_owned(), gen_cmd_path.to_owned());
     let mut gen_cmd = Command::new(&gen_cmd_path);
     gen_cmd.args(args);
-    let output = gen_cmd
-        .output()
-        .unwrap_or_else(|_| panic!("Failed to spawn {}", gen_name));
+    let output = gen_cmd.output().unwrap_or_else(|_| panic!("Failed to spawn {}", gen_name));
     if output.status.success() {
         Ok(String::from_utf8(output.stdout)?)
     } else {

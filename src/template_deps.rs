@@ -1,8 +1,11 @@
-use std::collections::HashMap;
-use std::io;
-use std::path::{Path, PathBuf};
-
-use log::debug;
+use {
+    log::debug,
+    std::{
+        collections::HashMap,
+        io,
+        path::{Path, PathBuf},
+    },
+};
 
 /// The dependencies of each template
 #[derive(Default, Debug)]
@@ -14,8 +17,7 @@ pub const PATH: &str = ".noten/template-deps.toml";
 
 impl TemplateDeps {
     pub fn open() -> io::Result<Self> {
-        use std::fs::File;
-        use std::io::prelude::*;
+        use std::{fs::File, io::prelude::*};
 
         let mut f = File::open(PATH)?;
         let mut s = String::new();
@@ -27,10 +29,7 @@ impl TemplateDeps {
             hash_map.insert(k.clone(), Vec::new());
             if let toml::Value::Array(ref vec) = *v {
                 for p in vec {
-                    hash_map
-                        .get_mut(&k)
-                        .unwrap()
-                        .push(p.as_str().unwrap().into());
+                    hash_map.get_mut(&k).unwrap().push(p.as_str().unwrap().into());
                 }
             } else {
                 panic!("Array expected");
@@ -55,8 +54,7 @@ impl TemplateDeps {
         }
     }
     pub fn save(&self) -> io::Result<()> {
-        use std::fs::File;
-        use std::io::prelude::*;
+        use std::{fs::File, io::prelude::*};
 
         let mut table = toml::value::Table::new();
         for (k, v) in &self.hash_map {

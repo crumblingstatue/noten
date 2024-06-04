@@ -5,11 +5,15 @@ mod substitution;
 mod template_deps;
 mod util;
 
-use config::{Config, ReadError};
-use log::{debug, error, info, warn};
-use std::fs::{self, File};
-use std::io::prelude::*;
-use std::time::SystemTime;
+use {
+    config::{Config, ReadError},
+    log::{debug, error, info, warn},
+    std::{
+        fs::{self, File},
+        io::prelude::*,
+        time::SystemTime,
+    },
+};
 
 /// Returns whether the entry to process is up-to-date, which
 /// means it does not need processing.
@@ -44,9 +48,7 @@ fn up_to_date(
 }
 
 fn run(config: &Config, exe_modif: &SystemTime, config_modif: &SystemTime) {
-    use process::ProcessingContext;
-    use std::path::Path;
-    use template_deps::TemplateDeps;
+    use {process::ProcessingContext, std::path::Path, template_deps::TemplateDeps};
 
     let (skeleton, skel_modif) = skeleton::Skeleton::parse_file(&config.skeleton).unwrap();
 
@@ -85,10 +87,7 @@ fn run(config: &Config, exe_modif: &SystemTime, config_modif: &SystemTime) {
             continue;
         }
         debug!("Checking up-to-dateness of {:?}", path);
-        let stem = path
-            .file_stem()
-            .expect("File doesnt' have a stem. The fuck?")
-            .to_owned();
+        let stem = path.file_stem().expect("File doesnt' have a stem. The fuck?").to_owned();
         let mut out_filename = stem.clone();
         out_filename.push(".html");
         let out_path = AsRef::<Path>::as_ref(&config.directories.output).join(out_filename);
@@ -189,10 +188,8 @@ fn main() {
     match config::read() {
         Ok((config, config_modif)) => {
             util::fs::create_dir_if_not_exists(".noten").unwrap();
-            let exe_modif = fs::metadata(::std::env::current_exe().unwrap())
-                .unwrap()
-                .modified()
-                .unwrap();
+            let exe_modif =
+                fs::metadata(::std::env::current_exe().unwrap()).unwrap().modified().unwrap();
             run(&config, &exe_modif, &config_modif);
         }
         Err(ReadError::Io(err)) => error!(

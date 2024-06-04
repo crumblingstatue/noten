@@ -1,8 +1,7 @@
-use std::error::Error;
-use std::path::Path;
-use std::time::SystemTime;
-
-use log::debug;
+use {
+    log::debug,
+    std::{error::Error, path::Path, time::SystemTime},
+};
 
 #[derive(Debug)]
 enum Segment {
@@ -98,8 +97,7 @@ fn parse(tokens: &[Token]) -> Result<Vec<Segment>, Box<dyn Error>> {
 
 impl Skeleton {
     pub fn parse_file<P: AsRef<Path>>(path: P) -> Result<(Self, SystemTime), Box<dyn Error>> {
-        use std::fs::File;
-        use std::io::prelude::*;
+        use std::{fs::File, io::prelude::*};
 
         let mut f = File::open(path)?;
         let mut s = String::new();

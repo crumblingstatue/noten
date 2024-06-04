@@ -1,9 +1,12 @@
-use quick_error::quick_error;
-use serde_derive::Deserialize;
-use std::fs::File;
-use std::io;
-use std::io::prelude::*;
-use std::time::SystemTime;
+use {
+    quick_error::quick_error,
+    serde_derive::Deserialize,
+    std::{
+        fs::File,
+        io::{self, prelude::*},
+        time::SystemTime,
+    },
+};
 
 pub const FILENAME: &str = "noten.toml";
 
