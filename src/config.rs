@@ -1,7 +1,7 @@
 use {
     quick_error::quick_error,
     serde_derive::Deserialize,
-    std::{fs::File, io::Read as _, time::SystemTime},
+    std::{fs::File, io::Read as _},
 };
 
 pub const FILENAME: &str = "noten.toml";
@@ -34,11 +34,10 @@ quick_error! {
 }
 
 /// Reads the configuration, returns (config, last-modified).
-pub fn read() -> Result<(Config, SystemTime), ReadError> {
+pub fn read() -> Result<Config, ReadError> {
     let mut file = File::open(FILENAME)?;
     let mut text = String::new();
     file.read_to_string(&mut text)?;
     let config = toml::from_str(&text)?;
-    let time = file.metadata().unwrap().modified().unwrap();
-    Ok((config, time))
+    Ok(config)
 }

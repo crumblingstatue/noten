@@ -7,50 +7,17 @@ mod util;
 
 use {
     config::{Config, ReadError},
-    log::{debug, error, info, warn},
+    log::{error, warn},
     std::{
         fs::{self, File},
         io::{Read as _, Write as _},
-        time::SystemTime,
     },
 };
 
-/// Returns whether the entry to process is up-to-date, which
-/// means it does not need processing.
-fn up_to_date(
-    template: &fs::Metadata,
-    content: Option<&fs::Metadata>,
-    exe_modif: &SystemTime,
-    config_modif: &SystemTime,
-    skel_modif: &SystemTime,
-    dep_modifs: &[SystemTime],
-) -> bool {
-    match content {
-        None => false,
-        Some(content_meta) => {
-            let content_modif = content_meta.modified().unwrap();
-            for dep_modif in dep_modifs {
-                if *dep_modif > content_modif {
-                    return false;
-                }
-            }
-            if *exe_modif > content_modif
-                || *config_modif > content_modif
-                || *skel_modif > content_modif
-            {
-                false
-            } else {
-                let template_modif = template.modified().unwrap();
-                content_modif > template_modif
-            }
-        }
-    }
-}
-
-fn run(config: &Config, exe_modif: &SystemTime, config_modif: &SystemTime) {
+fn run(config: &Config) {
     use {process::ProcessingContext, std::path::Path, template_deps::TemplateDeps};
 
-    let (skeleton, skel_modif) = skeleton::Skeleton::parse_file(&config.skeleton).unwrap();
+    let skeleton = skeleton::Skeleton::parse_file(&config.skeleton).unwrap();
 
     let mut template_deps = if Path::new(template_deps::PATH).exists() {
         TemplateDeps::open().unwrap()
@@ -86,7 +53,6 @@ fn run(config: &Config, exe_modif: &SystemTime, config_modif: &SystemTime) {
             );
             continue;
         }
-        debug!("Checking up-to-dateness of {:?}", path);
         let stem = path.file_stem().expect("File doesnt' have a stem. The fuck?").to_owned();
         let mut out_filename = stem.clone();
         out_filename.push(".html");
@@ -115,18 +81,6 @@ fn run(config: &Config, exe_modif: &SystemTime, config_modif: &SystemTime) {
                     }
                 }
             }
-        }
-
-        if up_to_date(
-            &en.metadata().unwrap(),
-            fs::metadata(&out_path).ok().as_ref(),
-            exe_modif,
-            config_modif,
-            &skel_modif,
-            &dep_modifs,
-        ) {
-            info!("{:?} is up to date", &path);
-            continue;
         }
 
         println!("Processing {:?}", &path);
@@ -186,11 +140,9 @@ fn main() {
     env_logger::init();
 
     match config::read() {
-        Ok((config, config_modif)) => {
+        Ok(config) => {
             util::fs::create_dir_if_not_exists(".noten").unwrap();
-            let exe_modif =
-                fs::metadata(::std::env::current_exe().unwrap()).unwrap().modified().unwrap();
-            run(&config, &exe_modif, &config_modif);
+            run(&config);
         }
         Err(ReadError::Io(err)) => error!(
             "Failed opening {} ({}). Not a valid noten project.",
