@@ -1,11 +1,7 @@
 use {
     quick_error::quick_error,
     serde_derive::Deserialize,
-    std::{
-        fs::File,
-        io::{self, prelude::*},
-        time::SystemTime,
-    },
+    std::{fs::File, io::Read as _, time::SystemTime},
 };
 
 pub const FILENAME: &str = "noten.toml";
@@ -28,7 +24,7 @@ pub struct Config {
 quick_error! {
     #[derive(Debug)]
     pub enum ReadError {
-        Io(err: io::Error) {
+        Io(err: std::io::Error) {
             from()
         }
         De(err: toml::de::Error) {

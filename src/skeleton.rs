@@ -1,6 +1,6 @@
 use {
     log::debug,
-    std::{error::Error, path::Path, time::SystemTime},
+    std::{error::Error, fs::File, io::Read as _, path::Path, time::SystemTime},
 };
 
 #[derive(Debug)]
@@ -97,8 +97,6 @@ fn parse(tokens: &[Token]) -> Result<Vec<Segment>, Box<dyn Error>> {
 
 impl Skeleton {
     pub fn parse_file<P: AsRef<Path>>(path: P) -> Result<(Self, SystemTime), Box<dyn Error>> {
-        use std::{fs::File, io::prelude::*};
-
         let mut f = File::open(path)?;
         let mut s = String::new();
         f.read_to_string(&mut s)?;

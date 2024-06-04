@@ -2,7 +2,8 @@ use {
     log::debug,
     std::{
         collections::HashMap,
-        io,
+        fs::File,
+        io::{self, Read as _, Write as _},
         path::{Path, PathBuf},
     },
 };
@@ -17,8 +18,6 @@ pub const PATH: &str = ".noten/template-deps.toml";
 
 impl TemplateDeps {
     pub fn open() -> io::Result<Self> {
-        use std::{fs::File, io::prelude::*};
-
         let mut f = File::open(PATH)?;
         let mut s = String::new();
         f.read_to_string(&mut s)?;
@@ -54,8 +53,6 @@ impl TemplateDeps {
         }
     }
     pub fn save(&self) -> io::Result<()> {
-        use std::{fs::File, io::prelude::*};
-
         let mut table = toml::value::Table::new();
         for (k, v) in &self.hash_map {
             let tp = k.to_string_lossy().into_owned();

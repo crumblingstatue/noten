@@ -10,7 +10,7 @@ use {
     log::{debug, error, info, warn},
     std::{
         fs::{self, File},
-        io::prelude::*,
+        io::{Read as _, Write as _},
         time::SystemTime,
     },
 };
