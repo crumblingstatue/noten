@@ -2,8 +2,8 @@ use {
     crate::{
         config::Config, skeleton::Skeleton, substitution::substitute, template_deps::TemplateDeps,
     },
-    hoedown::{self, Html, Markdown, Render},
     log::debug,
+    pulldown_cmark::Options,
     serde_derive::Deserialize,
     std::{error::Error, path::Path, sync::LazyLock},
 };
@@ -108,9 +108,12 @@ pub fn process(
             }
         }
     }
-    let doc = Markdown::new(&output).extensions(hoedown::TABLES);
-    let mut html = Html::new(hoedown::renderer::html::Flags::empty(), 0);
-    let render_result = html.render(&doc);
-    let output = render_result.to_str().expect("markdown=>html failed");
-    skeleton.out(&title, output, attribs.description.as_ref().map(|s| &s[..]))
+    let parser = pulldown_cmark::Parser::new_ext(&output, Options::ENABLE_TABLES);
+    let mut output = String::new();
+    pulldown_cmark::html::push_html(&mut output, parser);
+    skeleton.out(
+        &title,
+        &output,
+        attribs.description.as_ref().map(|s| &s[..]),
+    )
 }
