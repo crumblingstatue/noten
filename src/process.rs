@@ -3,6 +3,9 @@ use crate::skeleton::Skeleton;
 use crate::substitution::substitute;
 use crate::template_deps::TemplateDeps;
 use hoedown::{self, Html, Markdown, Render};
+use lazy_static::lazy_static;
+use log::debug;
+use serde_derive::Deserialize;
 use std::error::Error;
 use std::path::Path;
 

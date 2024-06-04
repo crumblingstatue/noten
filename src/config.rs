@@ -1,3 +1,5 @@
+use quick_error::quick_error;
+use serde_derive::Deserialize;
 use std::fs::File;
 use std::io;
 use std::io::prelude::*;

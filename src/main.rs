@@ -1,17 +1,3 @@
-extern crate env_logger;
-extern crate hoedown;
-#[macro_use]
-extern crate lazy_static;
-#[macro_use]
-extern crate log;
-#[macro_use]
-extern crate quick_error;
-extern crate regex;
-extern crate serde;
-#[macro_use]
-extern crate serde_derive;
-extern crate toml;
-
 mod config;
 mod process;
 mod skeleton;
@@ -20,6 +6,7 @@ mod template_deps;
 mod util;
 
 use config::{Config, ReadError};
+use log::{debug, error, info, warn};
 use std::fs::{self, File};
 use std::io::prelude::*;
 use std::time::SystemTime;

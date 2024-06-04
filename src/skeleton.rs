@@ -2,6 +2,8 @@ use std::error::Error;
 use std::path::Path;
 use std::time::SystemTime;
 
+use log::debug;
+
 #[derive(Debug)]
 enum Segment {
     Content,
